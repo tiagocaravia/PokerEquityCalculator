@@ -79,8 +79,8 @@ def detect_threats (community_cards):
 
     pairs = [r for r, count in rank_counts.items() if count >= 2]
     if pairs:
-        pair_ranks = [Card.Ranks[r] for r in pairs]
-        threats.append(f"Pairs on Board: {', '.join(pair_ranks)}")
+        pair_ranks = [Card.RANKS[r] for r in sorted(pairs)]
+        threats.append(f"Paired Board: {', '.join(pair_ranks)}")
     
     return threats if threats else ["No immediate threats detected"]
 

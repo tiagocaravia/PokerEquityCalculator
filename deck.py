@@ -3,7 +3,7 @@ from card import Card
 
 class Deck:
     def __init__(self):
-        self.cards = [Card(rank, suit) for suit in Card.Suits for rank in Card.Ranks]
+        self.cards = [Card(rank, suit) for suit in Card.SUITS for rank in Card.RANKS]
     
     def shuffle(self):
         random.shuffle(self.cards)
