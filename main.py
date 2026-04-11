@@ -1,3 +1,4 @@
+from advice import get_advice
 from card import Card
 from sim import simulate as sim
 from deck import Deck
@@ -21,23 +22,25 @@ def get_cards(prompt, n):
         except (KeyError, ValueError):
             print("Invalid card format. Use RANK followed by SUIT (e.g., 'AH' for Ace of Hearts).")
 
-def display_results(results):
-    print("\nResults:")
-    print(f"Win %: {results['win']:.2f}")
-    print(f"Tie %: {results['tie']:.2f}")
-    print(f"Loss %: {results['loss']:.2f}")
+def display_results(results, advice):
+    print("\n--- RESULTS ---")
+    print(f"Win:  {results['win']}%")
+    print(f"Tie:  {results['tie']}%")
+    print(f"Loss: {results['loss']}%")
 
-    print("\nBoard Threats:")
+    print("\n--- BOARD THREATS ---")
     threats = results['threats']
-    if not threats:
-        print("No significant threats detected.")
+    significant = {t: v for t, v in threats.items()
+                   if v >= 10 and t != "No immediate threats detected"}
+    if not significant:
+        print("No significant threats detected")
     else:
-        significant = {t: v for t, v in threats.items() if v >= 10 and t != "No immediate threats detected"}
-        if not significant:
-            print("No threats with significant probability.")
-        else:
-            for threat, prob in significant.items():
-                print(f"{threat}: {prob:.2f}%")
+        for threat, pct in sorted(significant.items(), key=lambda x: -x[1]):
+            print(f"{threat}: {pct}%")
+
+    print("\n--- ADVICE ---")
+    for line in advice:
+        print(line)
     
 def main():
     print("=== Poker Equity Calculator ===\n")
@@ -53,9 +56,13 @@ def main():
     else:
         community_cards = []
     
+    pot_size = float(input("Current pot size (0 if preflop): $"))
+    bet_amount = float(input("Bet amount to call (0 if no bet): $"))
+    
     print("\nCalculating equity...")
     results = sim(hole_cards, community_cards, num_players)
-    display_results(results)
+    advice = get_advice(results['win'], num_players, pot_size, bet_amount)
+    display_results(results, advice)
 
 if __name__ == "__main__":
     main()
