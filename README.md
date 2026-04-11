@@ -28,14 +28,32 @@ Enter your hole cards and community cards using rank + suit notation:
 - `sim.py` — Monte Carlo simulation engine
 - `main.py` — CLI interface
 
+## Advice Engine
+Given pot size and bet amount, the calculator computes pot odds and recommends whether to fold, call, or raise based on your equity vs required equity.
+
+- **Required equity** = Call Amount / (Pot + Call) × 100
+- **Break-even equity** = 1 / Number of Players × 100
+- Raise threshold scales relative to required equity with a minimum margin floor (15%)
+- Preflop decisions use break-even equity when no bet is present
+
 ## Example Output
-Win %: 87.1
-Tie %: 1.0
-Loss %: 11.9
-Board Threats:
-Straight Draw on Board: 22.5%
-Flush Draw on Board: Hearts: 8.6%
-Paired Board: 38.2%
+
+--- RESULTS ---
+Win:  61.3%
+Tie:  1.6%
+Loss: 37.1%
+
+--- BOARD THREATS ---
+Paired Board: 49.8%
+Straight Draw on Board: 22.3%
+
+--- ADVICE ---
+Pot size: $50.0
+Bet to call: $20.0
+Required equity to call: 28.6%
+Your equity: 61.3%
+Equity margin: +32.7%
+Decision: RAISE — equity is 114% above required
 
 ## Built With
 Python 3 — no external libraries required
