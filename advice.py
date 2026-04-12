@@ -2,9 +2,9 @@
 def get_advice(equity, num_players, pot_size, bet_amount):
     
     advice = []
-    break_even = round(1 / num_players * 100, 1)
+    break_even = round(1 / num_players * 100, 1) # Calculates break-even equity before betting considerations
 
-    if bet_amount == 0:
+    if bet_amount == 0: # No bet to call, pre-flop or free card situation
         margin = equity - break_even
 
         strong_threshold = break_even * 0.5
@@ -24,7 +24,7 @@ def get_advice(equity, num_players, pot_size, bet_amount):
         else:
             advice.append(f"Decision: FOLD \n equity is {round(abs(margin/break_even*100))}% below break-even \n Avoid Playing")
 
-    else:
+    else: # Bet to call situation, need to consider pot odds and required equity
         total_pot_after_bet = pot_size + bet_amount
         required_equity = round((bet_amount / total_pot_after_bet) * 100, 1)
         margin = equity - required_equity
