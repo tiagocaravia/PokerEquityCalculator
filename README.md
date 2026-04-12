@@ -4,13 +4,13 @@ A Texas Hold'em equity calculator built in Python that uses Monte Carlo simulati
 
 ## Features
 - Calculates win, tie, and loss percentages for any starting hand
+- Gives Fold/Call/Raise tips/feedbacks
 - Supports 2-9 players
 - Accepts known community cards for mid-hand analysis
-- Detects board threats including flush draws, straight draws, and paired boards
 - Runs 10,000 simulated outcomes per calculation
 
 ## How It Works
-Given your hole cards and any known community cards, the simulator randomly completes the board and deals opponent hands 10,000 times. Each iteration evaluates all hands using standard poker hand rankings and tracks wins, ties, and losses. Board threats are detected and aggregated across all simulations to show how often dangerous board textures appear.
+Given your hole cards and any known community cards, the simulator randomly completes the board and deals opponent hands 10,000 times. Each iteration evaluates all hands using standard poker hand rankings and tracks wins, ties, and losses. It will also give advice based on community cards and equity on whether or not to play certain hands.
 
 ## Usage
 ```bash
@@ -24,7 +24,7 @@ Enter your hole cards and community cards using rank + suit notation:
 ## File Structure
 - `card.py` — Card class with rank and suit representation
 - `deck.py` — Deck class with shuffle and deal methods
-- `evaluator.py` — Hand ranking and board threat detection
+- `evaluator.py` — Hand ranking
 - `sim.py` — Monte Carlo simulation engine
 - `main.py` — CLI interface
 
@@ -42,10 +42,6 @@ Given pot size and bet amount, the calculator computes pot odds and recommends w
 Win:  61.3%
 Tie:  1.6%
 Loss: 37.1%
-
---- BOARD THREATS ---
-Paired Board: 49.8%
-Straight Draw on Board: 22.3%
 
 --- ADVICE ---
 Pot size: $50.0
