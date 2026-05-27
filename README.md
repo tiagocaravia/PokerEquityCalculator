@@ -15,12 +15,12 @@ A high-performance Texas Hold'em equity calculator built in pure Python. The eng
 
 ## The Math Behind the Advice
 
-### 1. True Equity Calculation
+## 1. True Equity Calculation
 Splits ties equally among active players to ensure an accurate financial projection of your pot share:
 
 Showdown Equity = Win% + (Tie% / Number of Players)
 
-### 2. Decision Gateways
+## 2. Decision Gateways
 
 * **Facing a Bet:** Advises a Call/Raise if your showdown equity exceeds the pot odds threshold; otherwise, it advises a Fold.
   
@@ -34,10 +34,10 @@ Showdown Equity = Win% + (Tie% / Number of Players)
 
 ## System Limitations and Strategic Trade-offs
 
-> ### Architectural Decision History
+> ## Architectural Decision History
 > During development, I identified a core limitation: a Monte Carlo simulation calculates "hot-and-cold" showdown equity, assuming all players check to the river. It cannot natively account for human aggression, betting leverage, or positional disadvantages on early streets.
 > 
-> #### The Proposed Solution
+> ### The Proposed Solution
 > To solve this, I designed a heuristic layer to simulate real-world betting pressure:
 > * **Equity Realization Taxes:** Artificially slashing Pre-Flop equity by 8%, Flop equity by 5%, and Turn equity by 2% to protect the user from future betting rounds.
 > * **Crowd & Position Penalties:** Hiking the required calling threshold by 3% for every active player left to act behind the user.
