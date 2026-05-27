@@ -36,16 +36,16 @@ Showdown Equity = Win% + (Tie% / Number of Players)
 
 * ## Architectural Decision History
 * During development, I identified a core limitation: a Monte Carlo simulation calculates "hot-and-cold" showdown equity, assuming all players check to the river. It cannot natively account for human aggression, betting leverage, or positional disadvantages on early streets.
-* 
+  
 * ### The Proposed Solution
 * To solve this, I designed a heuristic layer to simulate real-world betting pressure:
 * * **Equity Realization Taxes:** Artificially slashing Pre-Flop equity by 8%, Flop equity by 5%, and Turn equity by 2% to protect the user from future betting rounds.
 * * **Crowd & Position Penalties:** Hiking the required calling threshold by 3% for every active player left to act behind the user.
-* 
+  
 * #### Why I Ultimately Omitted This Solution
 * 1. **Introduction of Magic Numbers:** Implementing these fixes required hardcoded, arbitrary constants. This degraded the mathematical integrity of the engine, turning a deterministic simulator into a subjective guessing tool.
 * 2. **Strategic Context-Blindness:** Static taxes assume a fixed opponent profile. A 5% penalty safely defends against a hyper-aggressive bluffer, but it results in massive under-realization and highly unprofitable over-folding against passive players.
-*
+
 * **Conclusion:** I stripped out the subjective patches to keep the codebase clean, testable, and deterministic. The engine provides unadulterated, objective EV data. This means the strategic limitations listed above must be audited and accounted for by the human user during live play.
 
 ---
@@ -54,7 +54,7 @@ Showdown Equity = Win% + (Tie% / Number of Players)
 
 * ### Visualizer
 * Implement visual graphs using libraries like Matplotlib to cleanly chart Equity vs. Pot Odds Thresholds and map equity shifts across different streets.
-* 
+  
 * ### Algorithmic Adjustments for Equity Realization (R)
 * Workshop a mathematically sound approach devoid of arbitrary constants to account for position and opponent profiles. The goal is to dynamically compute an Equity Realization factor ($R$) as a function of player aggression metrics, relative position, and board texture coordination.
 
