@@ -11,10 +11,11 @@ def simulate(hole_cards, community_cards = [], num_players = 2, num_simulations 
 
     known_cards = hole_cards + community_cards # Prevents sim from using cards that are already known to be in play
 
+    base_deck = [c for c in Deck().cards if c not in known_cards]
+
     for _ in range(num_simulations):
-        deck = Deck()
-        deck.cards = [c for c in deck.cards if c not in known_cards] # Removes Known cards from the deck
-        random.shuffle(deck.cards) 
+        deck = base_deck.copy()
+        random.shuffle(deck)
 
         cards_needed = 5 - len(community_cards) 
         sim_community = community_cards + deck.deal(cards_needed) # Deals remaining cards
