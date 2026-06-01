@@ -4,7 +4,7 @@ from card import Card
 from deck import Deck
 from evaluator import best_hand
 
-def simulate(hole_cards, community_cards = [], num_players = 2, num_simulations = 10000): # Monte Carlo Sim to estimate equity
+def simulate(hole_cards, community_cards = [], num_players = 2, num_simulations): # Monte Carlo Sim to estimate equity
     wins = 0
     ties = 0
     losses = 0

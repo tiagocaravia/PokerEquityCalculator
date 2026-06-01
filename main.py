@@ -38,6 +38,8 @@ def main(): # Main interaction loop for the user to input their hand, community 
     
     num_players = int(input("Enter number of players (including you): "))
 
+    num_simulations = int(input("Enter number of simulations (10,000 is recommended): "))
+
     community_input = input("Enter community cards if any (or press enter to skip): ").strip()
     if community_input:
         community_cards = [parse_card(c) for c in community_input.split()]
@@ -48,7 +50,7 @@ def main(): # Main interaction loop for the user to input their hand, community 
     bet_amount = float(input("Bet amount to call (0 if no bet): $"))
     
     print("\nCalculating equity...")
-    results = sim(hole_cards, community_cards, num_players)
+    results = sim(hole_cards, community_cards, num_players, num_simulations)
     advice = get_advice(results['win'], num_players, pot_size, bet_amount)
     display_results(results, advice)
 
