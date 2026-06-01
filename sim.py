@@ -4,7 +4,7 @@ from card import Card
 from deck import Deck
 from evaluator import best_hand
 
-def simulate(hole_cards, community_cards = [], num_players = 2, num_simulations): # Monte Carlo Sim to estimate equity
+def simulate(hole_cards, community_cards = [], num_players = 2, num_simulations = 10000): # Monte Carlo Sim to estimate equity
     wins = 0
     ties = 0
     losses = 0
@@ -18,11 +18,13 @@ def simulate(hole_cards, community_cards = [], num_players = 2, num_simulations)
         random.shuffle(deck)
 
         cards_needed = 5 - len(community_cards) 
-        sim_community = community_cards + deck.deal(cards_needed) # Deals remaining cards
+        sim_community = community_cards + deck[:cards_needed] # Deals remaining cards
+        deck = deck[cards_needed:]
 
         opponents = []
         for _ in range(num_players - 1): # deals 2 hole cards to each opponent
-            opponents.append(deck.deal(2))
+            opponents.append(deck[:2])
+            deck = deck[2:]
         
         my_hand = best_hand(hole_cards + sim_community) # Evaluates best hand for player
         opponent_hands = [best_hand(opp + sim_community) for opp in opponents] # Evaluates best hand for each opponent
@@ -45,5 +47,8 @@ def simulate(hole_cards, community_cards = [], num_players = 2, num_simulations)
     return results
 
 
-
-                          
+def convergence_analysis(hole_cards, community_cards=[], num_players=2, num_simulations=10000):
+    sample_sizes = [(num_simulations/100), (num_simulations/10), (num_simulations/5), (num_simulations/2)]
+    for n in sample_sizes:
+        result = simulate(hole_cards, community_cards, num_players, n)
+        print(f"n={n:>6}: win={result['win']}%")

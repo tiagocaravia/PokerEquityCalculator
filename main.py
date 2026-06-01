@@ -38,7 +38,11 @@ def main(): # Main interaction loop for the user to input their hand, community 
     
     num_players = int(input("Enter number of players (including you): "))
 
-    num_simulations = int(input("Enter number of simulations (10,000 is recommended): "))
+    num_simulations = input("Enter number of simulations (press enter to skip for standard amount): ")
+    if num_simulations:
+        num_simulations = int(num_simulations)
+    else:
+        num_simulations = 10000
 
     community_input = input("Enter community cards if any (or press enter to skip): ").strip()
     if community_input:
