@@ -53,10 +53,13 @@ Showdown Equity = Win% + (Tie% / Number of Players)
 ## Future Plans
 
 * ### Visualizer
-* Implement visual graphs using libraries like Matplotlib to cleanly chart Equity vs. Pot Odds Thresholds and map equity shifts across different streets.
+* Implement visual graphs using libraries like Matplotlib to cleanly chart Equity vs. Pot Odds Thresholds and map equity shifts across different streets. Also visual how accurate the win% becomes as N (numer of tests) becomes greater and greater. 
   
 * ### Algorithmic Adjustments for Equity Realization (R)
 * Workshop a mathematically sound approach devoid of arbitrary constants to account for position and opponent profiles. The goal is to dynamically compute an Equity Realization factor ($R$) as a function of player aggression metrics, relative position, and board texture coordination.
+
+* * ### Front End
+* In order to do this I'll need to familiarise myself with HTML/CSS to make a pretty front end where inputting values is easy and doesn't require terminal to run. I'd also use this as a place to display the visualizer.
 
 ---
 
