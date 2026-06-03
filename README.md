@@ -58,7 +58,7 @@ Showdown Equity = Win% + (Tie% / Number of Players)
 * ### Algorithmic Adjustments for Equity Realization (R)
 * Workshop a mathematically sound approach devoid of arbitrary constants to account for position and opponent profiles. The goal is to dynamically compute an Equity Realization factor ($R$) as a function of player aggression metrics, relative position, and board texture coordination.
 
-* * ### Front End
+* ### Front End
 * In order to do this I'll need to familiarise myself with HTML/CSS to make a pretty front end where inputting values is easy and doesn't require terminal to run. I'd also use this as a place to display the visualizer.
 
 ---
