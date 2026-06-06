@@ -10,3 +10,6 @@ class Card:
     def __repr__(self): #return statement for each card
         return f"{self.rank} of {self.suit}"
 
+    def __eq__(self, other):
+        return self.rank == other.rank and self.suit == other.suit
+
