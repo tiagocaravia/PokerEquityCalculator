@@ -1,6 +1,7 @@
 from advice import get_advice
 from card import Card
 from sim import simulate as sim
+from visualizer import plot_equity
 
 def parse_card(card_str): # Parses user input into Card objects
     card_str = card_str.strip().upper() # Standardizes input to uppercase and removes extra spaces
@@ -55,8 +56,9 @@ def main(): # Main interaction loop for the user to input their hand, community 
     
     print("\nCalculating equity...")
     results = sim(hole_cards, community_cards, num_players, num_simulations)
-    advice = get_advice(results['win'], num_players, pot_size, bet_amount)
+    advice = get_advice(results['win'], results['tie'], num_players, pot_size, bet_amount)
     display_results(results, advice)
+    plot_equity(hole_cards, community_cards, num_players, num_simulations)
 
 if __name__ == "__main__":
     main()
