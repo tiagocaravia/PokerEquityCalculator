@@ -95,6 +95,8 @@ Showdown Equity = Win% + (Tie% / Number of Players)
 
 <img width="794" height="499" alt="Screenshot 2026-06-09 at 4 27 54 PM" src="https://github.com/user-attachments/assets/5b6e2a44-efac-4c52-b23f-4c7e491094b8" />
 
+---
+
 ## Installation
 
 ```bash
@@ -107,3 +109,5 @@ Run the interface wrapper directly from your terminal:
 
 ```bash
 python3 main.py
+
+---
