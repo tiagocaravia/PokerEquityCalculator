@@ -9,7 +9,7 @@ A high-performance Texas Hold'em equity calculator built in pure Python. The eng
 * **Player Scaling** - Scales dynamically for 2-9 players in the pot.
 * **Street Specific Advice** - Evaluates Preflop, Flop, Turn, or River states separately depending on the community cards provided.
 * **Monte Carlo Simulation** - Simulates 10,000 random board runouts and opponent hand matrices per calculation.
-* **Zero Dependencies** - Built entirely within the Python standard library with no external installation requirements.
+* **Visualizer** - Built a visualizer that analyzes equity based on each street 
 
 ---
 
@@ -46,14 +46,9 @@ Showdown Equity = Win% + (Tie% / Number of Players)
 * 1. **Introduction of Magic Numbers:** Implementing these fixes required hardcoded, arbitrary constants. This degraded the mathematical integrity of the engine, turning a deterministic simulator into a subjective guessing tool.
 * 2. **Strategic Context-Blindness:** Static taxes assume a fixed opponent profile. A 5% penalty safely defends against a hyper-aggressive bluffer, but it results in massive under-realization and highly unprofitable over-folding against passive players.
 
-* **Conclusion:** I stripped out the subjective patches to keep the codebase clean, testable, and deterministic. The engine provides unadulterated, objective EV data. This means the strategic limitations listed above must be audited and accounted for by the human user during live play.
-
 ---
 
 ## Future Plans
-
-* ### Visualizer
-* Implement visual graphs using libraries like Matplotlib to cleanly chart Equity vs. Pot Odds Thresholds and map equity shifts across different streets. Also visual how accurate the win% becomes as N (numer of tests) becomes greater and greater. 
   
 * ### Algorithmic Adjustments for Equity Realization (R)
 * Workshop a mathematically sound approach devoid of arbitrary constants to account for position and opponent profiles. The goal is to dynamically compute an Equity Realization factor ($R$) as a function of player aggression metrics, relative position, and board texture coordination.
@@ -62,6 +57,12 @@ Showdown Equity = Win% + (Tie% / Number of Players)
 * In order to do this I'll need to familiarise myself with HTML/CSS to make a pretty front end where inputting values is easy and doesn't require terminal to run. I'd also use this as a place to display the visualizer.
 
 ---
+
+## Installation
+
+```bash
+pip install matplotlib
+```
 
 ## Usage
 
