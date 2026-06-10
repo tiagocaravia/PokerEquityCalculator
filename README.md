@@ -13,7 +13,7 @@ A high-performance Texas Hold'em equity calculator built in pure Python. The eng
 
 ---
 
-## The Math Behind the Advice
+## Math Element
 
 ## 1. True Equity Calculation
 Splits ties equally among active players to ensure an accurate financial projection of your pot share:
