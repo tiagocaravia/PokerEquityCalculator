@@ -31,10 +31,10 @@ def AggregatePreflopOdds():
                 num_simulations = 10000
             result = sim(hole_cards, num_players=num_players, num_simulations=num_simulations)
             PreflopEquity.append({
-                    "Hand": f"{hole_cards[0]}, {hole_cards[1]}",
-                    "win%": result['win'],
-                    "tie%": result['tie'],
-                    "loss%": result['loss'],
+                "Hand": f"{hole_cards[0]}, {hole_cards[1]}",
+                "win%": result['win'],
+                "tie%": result['tie'],
+                "loss%": result['loss'],
                 })
     return PreflopEquity
 
