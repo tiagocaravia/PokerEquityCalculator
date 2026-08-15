@@ -21,7 +21,13 @@ def get_cards(prompt, n): #input loop to get valid card input
         except (KeyError, ValueError):
             print("Invalid card format. Use RANK followed by SUIT (e.g., 'AH' for Ace of Hearts).")
 
-def display_results(results, advice): # Displays the results and advice to the user
+def display_results(results): # Displays the results to the user
+    print("\n--- RESULTS ---")
+    print(f"Win:  {results['win']}%")
+    print(f"Tie:  {results['tie']}%")
+    print(f"Loss: {results['loss']}%")
+
+def display_results_advice(results, advice): # Displays the results and advice to the user
     print("\n--- RESULTS ---")
     print(f"Win:  {results['win']}%")
     print(f"Tie:  {results['tie']}%")
@@ -57,7 +63,7 @@ def main(): # Main interaction loop for the user to input their hand, community 
     print("\nCalculating equity...")
     results = sim(hole_cards, community_cards, num_players, num_simulations)
     advice = get_advice(results['win'], results['tie'], num_players, pot_size, bet_amount)
-    display_results(results, advice)
+    display_results_advice(results)
     plot_equity(hole_cards, community_cards, num_players, num_simulations)
 
 if __name__ == "__main__":
