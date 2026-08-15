@@ -56,14 +56,11 @@ def main(): # Main interaction loop for the user to input their hand, community 
         community_cards = [parse_card(c) for c in community_input.split()]
     else:
         community_cards = []
-    
-    pot_size = float(input("Current pot size (0 if preflop): $"))
-    bet_amount = float(input("Bet amount to call (0 if no bet): $"))
-    
+  
     print("\nCalculating equity...")
     results = sim(hole_cards, community_cards, num_players, num_simulations)
-    advice = get_advice(results['win'], results['tie'], num_players, pot_size, bet_amount)
-    display_results_advice(results)
+    advice = get_advice(results['win'], results['tie'], num_players)
+    display_results_advice(results, advice)
     plot_equity(hole_cards, community_cards, num_players, num_simulations)
 
 if __name__ == "__main__":
