@@ -20,15 +20,6 @@ Splits ties equally among active players to ensure an accurate financial project
 
 Showdown Equity = Win% + (Tie% / Number of Players)
 
-## 2. Decision Gateways
-
-* **Facing a Bet:** Advises a Call/Raise if your showdown equity exceeds the pot odds threshold; otherwise, it advises a Fold.
-  
-  Pot Odds Threshold = (Bet to Call / (Current Pot + Bet to Call)) * 100
-
-* **Checked Pots:** Advises a Value Bet if your equity beats the table's baseline fair share; otherwise, it plays defensively with a Check.
-  
-  Table Fair Share = (1 / Number of Players) * 100
 
 ---
 ## Examples
