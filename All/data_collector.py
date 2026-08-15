@@ -8,7 +8,7 @@ def AggregatePreflopOdds():
     num_simulations = input("Enter number of simulations (press enter to skip for standard amount): ")
     for i in range(len(Card.RANKS)): #Off Suit Sims
         rank1 = Card.RANKS[i]
-        for j in range(i + 1, len(Card.RANKS)):
+        for j in range(i, len(Card.RANKS)):
             rank2 = Card.RANKS[j]
             hole_cards = [Card(rank1, 'Diamonds'), Card(rank2, 'Clubs')]
             if num_simulations:
