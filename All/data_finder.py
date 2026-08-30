@@ -10,7 +10,10 @@ with open(file_path, 'r', newline='') as file:
 
 def FindHand (hand):
     Swaphand = list(hand)
-    Swaphand[0], Swaphand[1] = Swaphand[1], Swaphand[0]  # Swap the first two characters
+    if Swaphand[2] == "":
+        Swaphand[0], Swaphand[1] = Swaphand[1], Swaphand[0]  # Swap the first two characters
+    else:
+        Swaphand[0], Swaphand[1], Swaphand[2] = Swaphand[1], Swaphand[2], Swaphand[0] #for 10s
     Swaphand = ''.join(Swaphand)  # Convert the list back to a string
     for row in data[1:]:  # Skip the header row
         if row[0] == hand or row[0] == Swaphand:
@@ -26,4 +29,4 @@ def FindHand (hand):
             }
     return None  # Return None if the hand is not found
 
-
+print(FindHand("J10 Suited"))
