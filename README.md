@@ -1,6 +1,6 @@
 # Texas Hold'em Monte Carlo Equity Calculator
 
-A high-performance Texas Hold'em equity calculator built in pure Python. The engine leverages a Monte Carlo simulation loop to compute showdown probabilities and translates raw statistics into Expected Value (EV) driven betting advice.
+A high-performance Texas Hold'em equity calculator built in pure Python. The engine leverages a Monte Carlo simulation loop to compute showdown probabilities, translates raw statistics into Expected Value (EV), and compiles pre-flop data for all hands and player amounts. 
 
 ---
 
