@@ -2,6 +2,7 @@ from advice import get_advice
 from card import Card
 from sim import simulate as sim
 from visualizer import plot_equity
+from iterated_sim import load_survivors, build_pool, simulate_vs_pool, simulate_with_folds 
 
 def parse_card(card_str): # Parses user input into Card objects
     card_str = card_str.strip().upper() # Standardizes input to uppercase and removes extra spaces
@@ -27,16 +28,21 @@ def display_results(results): # Displays the results to the user
     print(f"Tie:  {results['tie']}%")
     print(f"Loss: {results['loss']}%")
 
-def display_results_advice(results, advice): # Displays the results and advice to the user
-    print("\n--- RESULTS ---")
+
+def display_pool_results(results):
+    print("\n--- VS REALISTIC OPPONENTS (weak hands folded) ---")
     print(f"Win:  {results['win']}%")
     print(f"Tie:  {results['tie']}%")
     print(f"Loss: {results['loss']}%")
 
-    print("\n--- ADVICE ---")
-    for line in advice:
-        print(line)
-    
+def display_fold_results(results):
+    print("\n--- VS TABLE WITH FOLDS (weak hands fold, their cards stay dead) ---")
+    print(f"Win:  {results['win']}%  ({results['uncontested']}% because everyone folded)")
+    print(f"Tie:  {results['tie']}%")
+    print(f"Loss: {results['loss']}%")
+    print(f"Average opponents left in: {results['avg_opponents']}")
+    print(f"Equity: {results['equity']}%  (fair share: {results['fair_share']}%)")
+
 def main(): # Main interaction loop for the user to input their hand, community cards, and get results
     print("=== Poker Equity Calculator ===\n")
     print("Card format: rank + suit (e.g. AS = Ace of Spades, 10H = Ten of Hearts)\n")
@@ -59,9 +65,23 @@ def main(): # Main interaction loop for the user to input their hand, community 
   
     print("\nCalculating equity...")
     results = sim(hole_cards, community_cards, num_players, num_simulations)
-    advice = get_advice(results['win'], results['tie'], num_players)
-    display_results_advice(results, advice)
-    plot_equity(hole_cards, community_cards, num_players, num_simulations)
+    display_results(results)
+
+    pool = None
+    keep = None
+    try:
+        survivors = load_survivors(num_players)
+        keep = set(survivors["Hand"])
+        pool = build_pool(survivors)
+        pool_results = simulate_vs_pool(hole_cards, community_cards, num_players, num_simulations, pool)
+        display_pool_results(pool_results)
+
+        fold_results = simulate_with_folds(hole_cards, community_cards, num_players, num_simulations, keep)
+        display_fold_results(fold_results)
+    except FileNotFoundError:
+        print(f"\nNo Standard{num_players}.csv found. Run the preflop aggregator for "f"{num_players} players to enable realistic opponents.")
+
+    plot_equity(hole_cards, community_cards, num_players, num_simulations, pool, keep)
 
 if __name__ == "__main__":
     main()
