@@ -66,6 +66,7 @@ Showdown Equity = Win% + (Tie% / Number of Players)
 
 ```bash
 pip install matplotlib
+pip install pandas
 ```
 
 ## Usage
