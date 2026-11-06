@@ -1,6 +1,6 @@
 # Texas Hold'em Monte Carlo Equity Calculator
 
-A poker equity calculator I built in pure Python. Give it your hole cards, how many players are at the table, and (optionally) the board, and it runs a Monte Carlo sim to estimate how often you win. It's not fast. It's just simple, readable, and a fun way to poke at how poker equity actually works.
+A poker equity calculator I built in Python. Give it your hole cards, how many players are at the table, and (optionally) the board, and it runs a Monte Carlo sim to estimate how often you win. It's not fast. It's just simple, readable, and a fun way to poke at how poker equity actually works.
 
 ---
 
