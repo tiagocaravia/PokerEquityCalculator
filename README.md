@@ -8,7 +8,7 @@ A poker equity calculator I built in Python. Give it your hole cards, how many p
 
 * Win / tie / loss estimates for 2-9 players, from preflop through the river
 * Three different ways of modeling your opponents (see below)
-* An equity-by-street plot that compares all three
+* An equity-by-street plot that compares pre-flop, flop, turn, and river equity
 * A preflop equity table for all 169 starting hands, which is how the sim decides what a "playable" hand is
 
 ---
@@ -16,10 +16,9 @@ A poker equity calculator I built in Python. Give it your hole cards, how many p
 ## Three ways to look at your hand
 
 1. **vs random opponents.** Everyone gets two random cards and stays in. This is the classic equity calculator.
-2. **vs realistic opponents.** Everyone still stays in, but each opponent's hand is picked only from hands worth playing. Junk like 7-2 offsuit never shows up.
-3. **vs table with folds.** Everyone is dealt random cards, then anyone holding an unplayable hand folds. Folded cards stay dead (they can't land on the board) and you play whoever is left. If everyone folds, you take the pot.
+2. **vs realistic opponents.** Everyone still stays in, but each opponent's hand is picked only from hands worth playing. Hands like 7-2 offsuit never shows up in a player's hand.
+3. **vs table with folds.** Everyone is dealt random cards, then anyone holding an unplayable hand folds (same criteria as the realistic opponents). Folded cards stay dead (they can't land on the board) and you play whoever is left. If everyone folds, you take the pot.
 
-The gaps between these are the interesting part. A hand can look great against random cards and a lot worse against people who only play good hands, and the field shrinking changes things again.
 
 ---
 
@@ -27,7 +26,7 @@ The gaps between these are the interesting part. A hand can look great against r
 
 The preflop tables are already included in `Data/` as `Standard{n}.csv`, one per table size. Each one has all 169 starting hands simulated against random opponents. `data_collector.py` is what built them, so you only need to run it if you want to rebuild a table.
 
-A hand counts as playable if its equity is at least the table's fair share, which is 1 / number of players. At 9 players that's about 11.1%, and 81 of the 169 hand types make the cut (roughly 38% of all two-card combos).
+A hand counts as playable if its equity is at least the table's fair share, which is 1 / number of players. At 9 players that's about 11.1%, and ~80 of the 169 hand types make the cut.
 
 It's a single cut, with no repeated rounds of tightening.
 
@@ -38,7 +37,7 @@ It's a single cut, with no repeated rounds of tightening.
 * **Random and realistic modes:** Showdown equity = Win% + (Tie% / Number of Players). This is a quick approximation for split pots.
 * **Folds mode:** ties are split exactly among whoever actually tied. The fair share it reports adjusts to how many players are still in (the average of 1 / players left), so it isn't a fixed 1/N.
 
-A few honest caveats: there's no betting in the model, folding only happens preflop based on the starting hand, and "playable" is judged purely by equity against random hands. It's a way to explore equity, not a full poker model.
+A few honest caveats: there's no betting in the model, folding only happens preflop based on the starting hand, and "playable" is judged purely by equity against random hands. It's a way to explore equity, not a full poker model (yet).
 
 ---
 
