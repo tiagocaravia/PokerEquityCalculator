@@ -1,4 +1,3 @@
-from advice import get_advice
 from card import Card
 from sim import simulate as sim
 from visualizer import plot_equity

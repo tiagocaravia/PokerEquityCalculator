@@ -69,4 +69,30 @@ def plot_equity(hole_cards, community_cards, num_players=2, simulations=10000, p
                  markevery=list(range(1, len(fx) - 1)),  # markers only on the real street points
                  color=colors["vs table with folds"], label="Fair share with folds")
 
-    for i in xs: # Label points: highest above, lowest below,
+    for i in xs: # Label points: highest above, lowest below, anything in the middle to the right
+        ranked = sorted(series, key=lambda name: series[name][i], reverse=True)
+        for position, name in enumerate(ranked):
+            y = series[name][i]
+            if position == 0:
+                offset, ha, va = (0, 8), "center", "bottom"
+            elif position == len(ranked) - 1:
+                offset, ha, va = (0, -8), "center", "top"
+            else:
+                offset, ha, va = (10, 0), "left", "center"
+            plt.annotate(f"{y:.1f}%", (i, y), textcoords="offset points", xytext=offset,
+                         ha=ha, va=va, color=colors[name],
+                         bbox=dict(boxstyle="round,pad=0.15", fc="white", ec="none", alpha=0.8))
+
+    plt.xticks(xs, streets)
+    plt.xlim(left, right)
+    plt.ylim(-10, 100) # Extra room below zero so labels under low points aren't cut off
+    plt.yticks(range(0, 101, 20))
+
+    plt.title("Equity Progression")
+    plt.xlabel("Street")
+    plt.ylabel("Equity (%)")
+
+    plt.legend(fontsize=8)
+    plt.grid(axis="y", linestyle="--", alpha=0.5)
+    plt.tight_layout()
+    plt.show()
