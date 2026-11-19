@@ -1,6 +1,6 @@
 # Texas Hold'em Monte Carlo Equity Calculator
 
-A poker equity calculator I built in Python. Give it your hole cards, how many players are at the table, and (optionally) the board, and it runs a Monte Carlo sim to estimate how often you win.
+A poker equity calculator I built in Python. Give it your hole cards, how many players are at the table, and (optionally) the board, and it runs a Monte Carlo sim to estimate how often you win. It can also turn that equity into advice (play, call or fold), and it checks its own accuracy against exact answers.
 
 ---
 
@@ -10,13 +10,16 @@ A poker equity calculator I built in Python. Give it your hole cards, how many p
 * Three different ways of modeling your opponents (see below)
 * An equity-by-street plot that compares pre-flop, flop, turn, and river equity
 * A preflop equity table for all 169 starting hands, which is how the sim decides what a "playable" hand is
+* Advice: PLAY / FOLD / CLOSE preflop, and CALL / FOLD / CLOSE facing a bet, using pot odds and the EV of calling in big blinds
+* A convergence report and animation showing the estimate settle as the number of simulations grows
+* A validator that compares the sim against exactly enumerated and published equities
 
 ---
 
 ## Three ways to look at your hand
 
 1. **vs random opponents.** Everyone gets two random cards and stays in. This is the classic equity calculator.
-2. **vs realistic opponents.** Everyone still stays in, but each opponent's hand is picked only from hands worth playing. Hands like 7-2 offsuit never shows up in a player's hand.
+2. **vs realistic opponents.** Everyone still stays in, but each opponent's hand is picked only from hands worth playing. Hands like 7-2 offsuit never show up.
 3. **vs table with folds.** Everyone is dealt random cards, then anyone holding an unplayable hand folds (same criteria as the realistic opponents). Folded cards stay dead (they can't land on the board) and you play whoever is left. If everyone folds, you take the pot.
 
 
@@ -24,7 +27,7 @@ A poker equity calculator I built in Python. Give it your hole cards, how many p
 
 ## How "playable" gets decided
 
-The preflop tables are already included in `poker/Data/` as `Standard{n}.csv`, one per table size. Each one has all 169 starting hands simulated against random opponents. `build_tables.py` is what built them, so you only need to run it (`python3 build_tables.py`) if you want to rebuild a table.
+The preflop tables are already included in `poker/Data/` as `Standard{n}.csv`, for 3, 5, 7 and 9 players. Each one has all 169 starting hands simulated against random opponents. `build_tables.py` is what built them (10,000 sims per hand). Run `python3 build_tables.py` to rebuild one or to add another table size. The realistic and folds modes need a table for your player count.
 
 A hand counts as playable if its equity is at least the table's fair share, which is 1 / number of players. At 9 players that's about 11.1%, and ~75 of the 169 hand types make the cut.
 
@@ -34,10 +37,10 @@ It's a single cut, with no repeated rounds of tightening.
 
 ## The math
 
-* **Random and realistic modes:** Showdown equity = Win% + (Tie% / Number of Players). This is a quick approximation for split pots.
-* **Folds mode:** ties are split exactly among whoever actually tied. The fair share it reports adjusts to how many players are still in (the average of 1 / players left), so it isn't a fixed 1/N.
+* **Random and realistic modes (in `hand_analysis.py`):** Showdown equity = Win% + (Tie% / Number of Players). This is a quick approximation for split pots.
+* **Folds mode, and everything in `advise.py`:** ties are split exactly among whoever actually tied. The fair share the folds mode reports adjusts to how many players are still in (the average of 1 / players left), so it isn't a fixed 1/N.
 
-A few honest caveats: there's no betting in the model, folding only happens preflop based on the starting hand, and "playable" is judged purely by equity against random hands. It's a way to explore equity, not a full poker model (yet).
+A few honest caveats: opponents' hands don't depend on how they bet, folding only happens preflop based on the starting hand, and "playable" is judged purely by equity against random hands. `advise.py` adds pot odds for a single decision, but there's no model of betting across streets yet (no implied odds, no raising). It's a way to explore equity and decisions, not a full poker bot (yet).
 
 ---
 
@@ -79,9 +82,13 @@ The plot shows the same hand street by street, with all three views. The gray da
 
 ## Setup
 
+Needs Python 3.10 or newer.
+
 ```bash
 pip install matplotlib pandas
 ```
+
+(numpy and Pillow, used by the convergence animation, come with these.)
 
 ---
 
@@ -101,6 +108,29 @@ It will ask for:
 * Community cards, if any (or press enter to skip)
 
 If there's no `Standard{n}.csv` for your player count, it still runs the random-opponent sim and tells you to run `build_tables.py` for the rest.
+
+---
+
+## Advice: play, call or fold
+
+`advise.py` turns equity into a decision:
+
+```bash
+python3 advise.py                                                   # asks you questions
+python3 advise.py --hole "AS 10S" --players 9                       # preflop: playable?
+python3 advise.py --hole "KH KD" --board "KS 9H 4H 7C 2H" --pot 10 --bet pot --stack 40
+python3 advise.py --hole "QH JH" --board "10H 4C 2H" --opponents 2 --pot 60 --bet 20 --bb 2
+```
+
+* **Preflop:** PLAY / FOLD / CLOSE, comparing your equity with the fair share (1 / players), the same cutoff the preflop tables use.
+* **Facing a bet:** CALL / FOLD / CLOSE. You need equity of at least call ÷ (pot + call) to break even, and EV(call) = equity × (pot + call) − call, with folding worth 0. The bet can be an amount or `third`, `half`, `pot`, `75%`, `2x`.
+* **Units:** amounts are in big blinds, and EV is reported in big blinds. If you'd rather type chips, pass `--bb` with the big blind's size (`--bb 2` makes `--pot 60` mean 30bb). `2.5bb` always means big blinds.
+* **Stack (optional):** `--stack` is your stack before calling. It shows what's left behind and the stack-to-pot ratio. If calling puts you all in, it uses only the part of the bet you can match, and notes that pot odds are exact since no more betting follows.
+* **CLOSE** means the equity is within 3 points of break-even, or within its confidence interval. Those are the spots where the right answer depends on who you're playing.
+
+Equity is shown against random hands and against realistic (playable-only) hands, with a 95% interval, and the verdict uses the realistic one when there's a table for that many players. Tied pots are split exactly.
+
+**Big bets:** players who bet half the pot or more usually hold strong hands or bluffs, not the average playable hand. So for those the CLOSE band is wider and the output warns that the equity is likely too optimistic. Handling that properly, by modeling how each type of player bets, is the next step.
 
 ---
 
@@ -146,6 +176,7 @@ The flop, turn and river checks use the same hand evaluator for both the enumera
 PokerEquityCalculator/
 ├── README.md
 ├── hand_analysis.py       # the calculator: run this
+├── advise.py              # PLAY / FOLD / CLOSE, pot odds and EV of calling
 ├── convergence.py         # running estimate + confidence interval, with animation
 ├── validate.py            # checks the sim against exact equity, with confidence intervals
 ├── build_tables.py        # builds the preflop equity tables
@@ -153,9 +184,11 @@ PokerEquityCalculator/
     ├── sim.py             # random-opponent simulation
     ├── iterated_sim.py    # realistic-opponent and folds simulations
     ├── visualizer.py      # equity plot
+    ├── equity.py          # equity + confidence interval vs a pluggable opponent model
+    ├── decisions.py       # pot odds, EV and verdicts (tunable Settings)
     ├── evaluator.py       # hand ranking
     ├── card.py            # card class + parsing "AS"-style input
     ├── deck.py            # deck class
     └── Data/              # preflop tables (Standard{n}.csv)
-        └── data_finder.py # look up a hand's row in a table
+        └── data_finder.py # look up a hand: python3 poker/Data/data_finder.py "J10 Suited" 9
 ```

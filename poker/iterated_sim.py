@@ -8,13 +8,16 @@ from .deck import Deck
 from .evaluator import best_hand
 
 
-def load_survivors(num_players):
+def load_table(num_players): # The full preflop table for this many players, with an equity column
     data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'Data')
     df = pd.read_csv(os.path.join(data_dir, f'Standard{num_players}.csv'))
-
     df["equity"] = df["win%"] + df["tie%"] / num_players  # same formula as plot_equity
-    cutoff = 100 / num_players
+    return df
 
+
+def load_survivors(num_players):
+    df = load_table(num_players)
+    cutoff = 100 / num_players
     return df[df["equity"] >= cutoff]
 
 

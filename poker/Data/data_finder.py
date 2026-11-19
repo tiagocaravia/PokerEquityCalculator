@@ -1,12 +1,20 @@
 import os
+import sys
 import pandas as pd
+
 script_dir = os.path.dirname(os.path.abspath(__file__))
-file_path = os.path.join(script_dir, 'Standard5.csv')
-
-df = pd.read_csv(file_path, dtype={"Hand": str})
+tables = {}  # Tables already loaded, by player count
 
 
-def FindHand (hand):
+def load(num_players):
+    if num_players not in tables:
+        file_path = os.path.join(script_dir, f'Standard{num_players}.csv')
+        tables[num_players] = pd.read_csv(file_path, dtype={"Hand": str})
+    return tables[num_players]
+
+
+def FindHand (hand, num_players=5): # Looks up a hand like "J10 Suited" or "AA Offsuit" in the table for num_players
+    df = load(num_players)
     Swaphand = list(hand)
     if Swaphand[2] == " ":
         Swaphand[0], Swaphand[1] = Swaphand[1], Swaphand[0]  # Swap the first two characters
@@ -21,4 +29,7 @@ def FindHand (hand):
     return match.iloc[0].to_dict()
 
 if __name__ == "__main__":
-    print(FindHand("J10 Suited"))
+    # python3 poker/Data/data_finder.py "J10 Suited" 9
+    hand = sys.argv[1] if len(sys.argv) > 1 else "J10 Suited"
+    players = int(sys.argv[2]) if len(sys.argv) > 2 else 5
+    print(FindHand(hand, players))
