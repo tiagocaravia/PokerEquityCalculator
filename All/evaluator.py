@@ -16,6 +16,7 @@ def get_hand_rank(hand): # Evaluates The Rank of a 5 card hand
     for r in ranks:
         rank_counts[r] = rank_counts.get(r, 0) + 1
 
+    ranks = sorted(ranks, key=lambda r: (rank_counts[r], r), reverse=True) # Pairs/trips/quads first, then kickers, so KK543 beats 22AKQ
     counts = sorted(rank_counts.values(), reverse=True) # Sorts counts to determine pairs, trips, quads
 
     if is_straight and is_flush:
