@@ -94,6 +94,8 @@ pip install matplotlib pandas
 
 ## Usage
 
+Every script asks for its inputs if you run it with no options. After each result it asks **Try another?**, and the next round starts with your previous answers in brackets, so you can press enter to keep them and change only what you want, e.g. the same hand with a different board or player count. Ctrl-C quits. You can also pass options (shown below) to skip the questions.
+
 From the project folder, run:
 
 ```bash
@@ -139,6 +141,7 @@ Equity is shown against random hands and against realistic (playable-only) hands
 `convergence.py` shows how the estimate settles as the number of simulations grows. It works for any hand, player count and board:
 
 ```bash
+python3 convergence.py                                              # asks you questions
 python3 convergence.py --hole "AS KH" --players 6
 python3 convergence.py --hole "7H 2S" --players 9 --board "AH QD 2H" --save convergence.gif
 ```
@@ -154,7 +157,8 @@ It also plays an animation: the running estimate draws in with its confidence ba
 `validate.py` checks the Monte Carlo sim against the true equity, heads-up against one random hand:
 
 ```bash
-python3 validate.py                                   # AH KH on QH JD 2C
+python3 validate.py                                   # asks you questions
+python3 validate.py --hole "AH KH" --board "QH JD 2C"
 python3 validate.py --hole "KS KD" --board ""         # preflop
 python3 validate.py --hole "7H 2S" --board "AH QD 2H 7D" --save validation.png
 ```
@@ -188,6 +192,7 @@ PokerEquityCalculator/
     ├── decisions.py       # pot odds, EV and verdicts (tunable Settings)
     ├── evaluator.py       # hand ranking
     ├── card.py            # card class + parsing "AS"-style input
+    ├── prompts.py         # the questions the scripts ask, with defaults
     ├── deck.py            # deck class
     └── Data/              # preflop tables (Standard{n}.csv)
         └── data_finder.py # look up a hand: python3 poker/Data/data_finder.py "J10 Suited" 9

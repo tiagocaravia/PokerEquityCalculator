@@ -1,4 +1,5 @@
 from poker.card import parse_card
+from poker.prompts import again, interactive_loop
 from poker.sim import simulate as sim
 from poker.visualizer import plot_equity
 from poker.iterated_sim import load_survivors, build_pool, simulate_vs_pool, simulate_with_folds 
@@ -35,10 +36,7 @@ def display_fold_results(results):
     print(f"Average opponents left in: {results['avg_opponents']}")
     print(f"Equity: {results['equity']}%  (fair share: {results['fair_share']}%)")
 
-def main(): # Main interaction loop for the user to input their hand, community cards, and get results
-    print("=== Poker Equity Calculator ===\n")
-    print("Card format: rank + suit (e.g. AS = Ace of Spades, 10H = Ten of Hearts)\n")
-
+def analyze(): # One hand: inputs, results, plot
     hole_cards = get_cards("Enter your 2 hole cards (e.g. AS KH): ", 2)
     
     num_players = int(input("Enter number of players (including you): "))
@@ -75,5 +73,15 @@ def main(): # Main interaction loop for the user to input their hand, community 
 
     plot_equity(hole_cards, community_cards, num_players, num_simulations, pool, keep)
 
+
+def main(): # Main interaction loop for the user to input their hand, community cards, and get results
+    print("=== Poker Equity Calculator ===\n")
+    print("Card format: rank + suit (e.g. AS = Ace of Spades, 10H = Ten of Hearts)\n")
+    while True:
+        analyze()
+        if not again():
+            break
+        print()
+
 if __name__ == "__main__":
-    main()
+    interactive_loop(main)

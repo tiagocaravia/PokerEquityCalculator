@@ -1,14 +1,3 @@
-"""
-Equity estimates with a confidence interval, against a pluggable opponent model.
-
-An opponent model is any object with a .deal(deck, num_opponents) method that
-returns a list of 2-card hands taken from `deck` (the cards not yet known).
-Two come built in:
-    RandomOpponents()        every opponent holds any two cards
-    RangeOpponents(pool)     every opponent holds a hand from `pool`, e.g. the playable hands
-For a competition you can write your own (e.g. a range narrowed by how a bot has bet)
-and pass it to estimate_equity without touching anything else.
-"""
 import math
 import random
 from dataclasses import dataclass
@@ -50,8 +39,7 @@ class RangeOpponents:
         return hands
 
 
-def pot_share(my_rank, opponent_ranks):
-    """Your share of the pot: 1 for a win, 0 for a loss, 1/k when k players tie for best."""
+def pot_share(my_rank, opponent_ranks): # 1 win, 0 loss, 1/k split
     best_opp = max(opponent_ranks)
     if my_rank > best_opp:
         return 1.0
@@ -71,8 +59,7 @@ class EquityEstimate:
         return f"{self.equity * 100:.1f}% ± {self.half_width * 100:.1f}"
 
 
-def estimate_equity(hole_cards, board, num_opponents, num_simulations=5000, model=None):
-    """Showdown equity vs `num_opponents` opponents drawn from `model` (default: random hands)."""
+def estimate_equity(hole_cards, board, num_opponents, num_simulations=5000, model=None): # Equity + 95% CI vs a model
     model = model or RandomOpponents()
     known = hole_cards + board
     deck = [c for c in Deck().cards if c not in known]

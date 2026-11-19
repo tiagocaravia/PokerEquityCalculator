@@ -1,33 +1,18 @@
-"""
-Convergence analysis for the Monte Carlo sim.
-
-Works for any hand, player count and board (no exact answer needed). It runs
-the sim once and tracks the running equity estimate and its 95% confidence
-interval after every hand, so you can see when the estimate settles down and
-how many sims you need for a given precision. It also includes an animation
-of the interval shrinking.
-
-Usage (from the project folder):
-    python3 convergence.py --hole "AS KH" --players 6
-    python3 convergence.py --hole "7H 2S" --players 9 --board "AH QD 2H" --sims 20000
-    python3 convergence.py --hole "QS QD" --players 3 --save convergence.gif
-"""
 import argparse
 import math
 import random
+import sys
 
 import numpy as np
 
-from poker.card import parse_card
+from poker.prompts import again, ask, ask_cards, cards_from, interactive_loop, yes
 from poker.deck import Deck
 from poker.sim import play_one_hand
 
 Z_95 = 1.96
 
 
-def simulate_values(hole_cards, community_cards, num_players, num_simulations):
-    """Plays num_simulations hands. Each hand is worth 1 for a win, 1/num_players for a tie
-    (same equity formula as the rest of the project) and 0 for a loss."""
+def simulate_values(hole_cards, community_cards, num_players, num_simulations): # Pot share per hand
     value = {"win": 1.0, "tie": 1 / num_players, "loss": 0.0}
     known = hole_cards + community_cards
     base_deck = [c for c in Deck().cards if c not in known]
@@ -35,8 +20,7 @@ def simulate_values(hole_cards, community_cards, num_players, num_simulations):
                      for _ in range(num_simulations)])
 
 
-def running_ci(values):
-    """Running estimate and 95% CI half-width after each hand."""
+def running_ci(values): # Running estimate + 95% CI
     n = np.arange(1, len(values) + 1)
     mean = np.cumsum(values) / n
     mean_sq = np.cumsum(values ** 2) / n
@@ -82,7 +66,7 @@ def animate(mean, half_width, title, save_path=None, frames=120):
     mean_pct, hw_pct = mean * 100, half_width * 100
     final = mean_pct[-1]
 
-    # Draw on log-spaced points: smooth on a log axis and fast to redraw
+    # Log-spaced points, fast to redraw
     idx = np.unique(np.geomspace(start, num_simulations, 800).astype(int)) - 1
     xs = idx + 1
     frame_ends = np.unique(np.geomspace(start, num_simulations, frames).astype(int))
@@ -112,7 +96,7 @@ def animate(mean, half_width, title, save_path=None, frames=120):
     readout = ax1.text(0.02, 0.04, "", transform=ax1.transAxes, fontsize=11, family="monospace",
                        bbox=dict(boxstyle="round,pad=0.4", fc="white", ec="#cccccc"))
 
-    # Right: where the true equity probably is (normal curve, peak scaled to 1)
+    # Right: bell curve of the estimate
     grid = np.linspace(lo, hi, 600)
     ax2.set_xlim(lo, hi)
     ax2.set_ylim(0, 1.25)
@@ -157,8 +141,40 @@ def animate(mean, half_width, title, save_path=None, frames=120):
     return anim
 
 
+def run(hole_str, board_str, players, sims, animate_it=True, save=None):
+    hole, board = cards_from(hole_str), cards_from(board_str)
+    where = f"on {board_str.upper()}" if board else "preflop"
+    title = f"{hole_str.upper()} {where}  ·  {players} players  ·  {sims:,} sims"
+    print(f"\n=== Convergence: {title} ===\n")
+
+    values = simulate_values(hole, board, players, sims)
+    mean, half_width = running_ci(values)
+    convergence_report(mean, half_width)
+
+    if animate_it:
+        animate(mean, half_width, title, save)
+
+
+def interactive():
+    print("=== Convergence ===  (cards like AS or 10H; enter keeps the value in brackets)\n")
+    hole, board, players, sims, show = "AS KH", "", 2, 20000, True
+    while True:
+        hole = ask_cards("Your hole cards", hole, [2])
+        board = ask_cards("Board (none for preflop)", board, [0, 3, 4, 5], taken=cards_from(hole))
+        players = ask("Players, including you", players, int, lambda n: None if 2 <= n <= 9 else "2 to 9.")
+        sims = ask("Simulations", sims, int, lambda n: None if n >= 100 else "At least 100.")
+        show = yes("Show the animation? (y/n)", show)
+        run(hole, board, players, sims, show)
+        if not again():
+            break
+
+
 def main():
-    parser = argparse.ArgumentParser(description="Convergence analysis and animation for the Monte Carlo sim.")
+    if len(sys.argv) == 1:
+        return interactive_loop(interactive)
+
+    parser = argparse.ArgumentParser(description="Convergence analysis and animation for the Monte Carlo sim. "
+                                                 "Run with no options to be asked for each input.")
     parser.add_argument("--hole", default="AS KH", help='Your hole cards, e.g. "AS KH"')
     parser.add_argument("--players", type=int, default=2, help="Number of players, including you")
     parser.add_argument("--board", default="", help='0, 3, 4 or 5 community cards, e.g. "QH JD 2C"')
@@ -168,13 +184,13 @@ def main():
     parser.add_argument("--no-animate", action="store_true", help="Just print the report")
     args = parser.parse_args()
 
-    hole = [parse_card(c) for c in args.hole.split()]
-    board = [parse_card(c) for c in args.board.split()]
+    try:
+        hole, board = cards_from(args.hole), cards_from(args.board)
+    except ValueError:
+        parser.error("Invalid card. Use RANK + SUIT, e.g. AH or 10S.")
     cards = hole + board
     if len(hole) != 2 or len(board) not in (0, 3, 4, 5):
         parser.error("Need exactly 2 hole cards and 0, 3, 4 or 5 board cards.")
-    if any(c.suit is None or c.rank not in c.RANKS for c in cards):
-        parser.error("Invalid card. Use RANK + SUIT, e.g. AH or 10S.")
     if len({(c.rank, c.suit) for c in cards}) != len(cards):
         parser.error("Duplicate card.")
     if not 2 <= args.players <= 9:
@@ -183,17 +199,7 @@ def main():
         parser.error("Use at least 100 sims.")
     if args.seed is not None:
         random.seed(args.seed)
-
-    where = f"on {args.board.upper()}" if board else "preflop"
-    title = f"{args.hole.upper()} {where}  ·  {args.players} players  ·  {args.sims:,} sims"
-    print(f"=== Convergence: {title} ===\n")
-
-    values = simulate_values(hole, board, args.players, args.sims)
-    mean, half_width = running_ci(values)
-    convergence_report(mean, half_width)
-
-    if not args.no_animate:
-        animate(mean, half_width, title, args.save)
+    run(args.hole, args.board, args.players, args.sims, not args.no_animate, args.save)
 
 
 if __name__ == "__main__":
