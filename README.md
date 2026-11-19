@@ -104,6 +104,21 @@ If there's no `Standard{n}.csv` for your player count, it still runs the random-
 
 ---
 
+## Convergence
+
+`convergence.py` shows how the estimate settles as the number of simulations grows. It works for any hand, player count and board:
+
+```bash
+python3 All/convergence.py --hole "AS KH" --players 6
+python3 All/convergence.py --hole "7H 2S" --players 9 --board "AH QD 2H" --save convergence.gif
+```
+
+It prints the running equity and its 95% confidence interval at checkpoints (100, 200, 500, 1,000, ...), how far the estimate moved since the last checkpoint, and how many sims you'd need for ±2, ±1, ±0.5 or ±0.1 points. The 95% confidence interval is estimate ± 1.96·σ/√n, so 4× the sims gives half the width.
+
+It also plays an animation: the running estimate draws in with its confidence band shrinking around it, next to a bell curve of where the true equity probably is, which narrows into a spike. Use `--save file.gif` to save it, or `--no-animate` to skip it.
+
+---
+
 ## Validation
 
 `validate.py` checks the Monte Carlo sim against the true equity, heads-up against one random hand:
@@ -137,6 +152,7 @@ PokerEquityCalculator/
     ├── sim.py             # random-opponent simulation
     ├── iterated_sim.py    # realistic-opponent and folds simulations
     ├── visualizer.py      # equity plot
+    ├── convergence.py     # running estimate + confidence interval, with animation
     ├── validate.py        # checks the sim against exact equity, with confidence intervals
     ├── data_collector.py  # builds the preflop equity tables
     ├── evaluator.py       # hand ranking

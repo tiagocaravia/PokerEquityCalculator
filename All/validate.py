@@ -27,10 +27,9 @@ import numpy as np
 from deck import Deck
 from evaluator import best_hand
 from main import parse_card
-from sim import play_one_hand, simulate
+from sim import simulate
+from convergence import Z_95, checkpoints, running_ci, simulate_values
 
-Z_95 = 1.96
-OUTCOME_VALUE = {"win": 1.0, "tie": 0.5, "loss": 0.0}  # Heads-up equity per hand: ties split the pot
 
 # Exact heads-up preflop equity vs one random hand (win + tie/2), from full enumeration
 # of every board. Only hands where both sources below agree to two decimals are included:
@@ -78,27 +77,8 @@ def exact_equity(hole_cards, board):
 
 
 def monte_carlo_run(hole_cards, board, num_simulations):
-    """One Monte Carlo run. Returns running estimate and 95% CI half-width after each hand."""
-    known = hole_cards + board
-    base_deck = [c for c in Deck().cards if c not in known]
-    values = np.array([OUTCOME_VALUE[play_one_hand(hole_cards, board, 2, base_deck)]
-                       for _ in range(num_simulations)])
-
-    n = np.arange(1, num_simulations + 1)
-    mean = np.cumsum(values) / n
-    mean_sq = np.cumsum(values ** 2) / n
-    with np.errstate(invalid="ignore", divide="ignore"):
-        sample_var = np.maximum(mean_sq - mean ** 2, 0) * n / (n - 1)  # Unbiased (n-1) variance
-        half_width = Z_95 * np.sqrt(sample_var / n)
-    return mean, half_width
-
-
-def checkpoints(num_simulations):
-    points, n = [], 100
-    while n < num_simulations:
-        points.extend(p for p in (n, 2 * n, 5 * n) if p < num_simulations)
-        n *= 10
-    return points + [num_simulations]
+    """One heads-up Monte Carlo run. Returns running estimate and 95% CI half-width after each hand."""
+    return running_ci(simulate_values(hole_cards, board, 2, num_simulations))
 
 
 def pct(x):

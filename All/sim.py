@@ -54,10 +54,3 @@ def simulate(hole_cards, community_cards = [], num_players = 2, num_simulations 
             "loss": round(losses / total * 100, 1),
     }
     return results
-
-
-def convergence_analysis(hole_cards, community_cards=[], num_players=2, num_simulations=10000):
-    sample_sizes = [(num_simulations/100), (num_simulations/10), (num_simulations/5), (num_simulations/2)]
-    for n in sample_sizes:
-        result = simulate(hole_cards, community_cards, num_players, n)
-        print(f"n={n:>6}: win={result['win']}%")
