@@ -10,7 +10,7 @@ Validates the Monte Carlo simulator against the true (exact) equity.
    1/sqrt(n)? How many sims do you need for a given precision?
 4. Plot: the CI funnel closing in on the exact answer.
 
-Usage (from the All/ folder):
+Usage (from the project folder):
     python3 validate.py
     python3 validate.py --hole "AS KS" --board "QS JD 2C" --sims 20000 --runs 12
     python3 validate.py --board "QS JD 2C 7H" --save validation.png
@@ -24,10 +24,10 @@ from itertools import combinations
 
 import numpy as np
 
-from deck import Deck
-from evaluator import best_hand
-from main import parse_card
-from sim import simulate
+from poker.card import parse_card
+from poker.deck import Deck
+from poker.evaluator import best_hand
+from poker.sim import simulate
 from convergence import Z_95, checkpoints, running_ci, simulate_values
 
 
@@ -203,8 +203,8 @@ def main():
         exact["sigma"] = math.sqrt(sum(final_vars) / len(final_vars))
         print(f"  Per-hand std dev σ ≈ {exact['sigma']:.3f} (estimated from all {args.runs * args.sims:,} hands)")
 
-    # 3. The simulator as main.py calls it
-    print(f"\nRunning simulate() as main.py does ({args.sims:,} sims)...", flush=True)
+    # 3. The simulator as hand_analysis.py calls it
+    print(f"\nRunning simulate() as hand_analysis.py does ({args.sims:,} sims)...", flush=True)
     r = simulate(hole, board, 2, args.sims)
     sim_equity = r["win"] + r["tie"] / 2
     se = exact["sigma"] * 100 / math.sqrt(args.sims)

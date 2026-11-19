@@ -1,8 +1,8 @@
 import random 
 from itertools import combinations
-from card import Card
-from deck import Deck
-from evaluator import best_hand
+from .card import Card
+from .deck import Deck
+from .evaluator import best_hand
 
 def play_one_hand(hole_cards, community_cards, num_players, base_deck): # Deals out one random hand and returns "win", "tie" or "loss"
     deck = base_deck.copy()

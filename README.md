@@ -24,7 +24,7 @@ A poker equity calculator I built in Python. Give it your hole cards, how many p
 
 ## How "playable" gets decided
 
-The preflop tables are already included in `Data/` as `Standard{n}.csv`, one per table size. Each one has all 169 starting hands simulated against random opponents. `data_collector.py` is what built them, so you only need to run it if you want to rebuild a table.
+The preflop tables are already included in `poker/Data/` as `Standard{n}.csv`, one per table size. Each one has all 169 starting hands simulated against random opponents. `build_tables.py` is what built them, so you only need to run it (`python3 build_tables.py`) if you want to rebuild a table.
 
 A hand counts as playable if its equity is at least the table's fair share, which is 1 / number of players. At 9 players that's about 11.1%, and ~75 of the 169 hand types make the cut.
 
@@ -90,7 +90,7 @@ pip install matplotlib pandas
 From the project folder, run:
 
 ```bash
-python3 All/main.py
+python3 hand_analysis.py
 ```
 
 It will ask for:
@@ -100,7 +100,7 @@ It will ask for:
 * Number of simulations (press enter for the default of 10,000)
 * Community cards, if any (or press enter to skip)
 
-If there's no `Standard{n}.csv` for your player count, it still runs the random-opponent sim and tells you to run `data_collector.py` for the rest.
+If there's no `Standard{n}.csv` for your player count, it still runs the random-opponent sim and tells you to run `build_tables.py` for the rest.
 
 ---
 
@@ -109,8 +109,8 @@ If there's no `Standard{n}.csv` for your player count, it still runs the random-
 `convergence.py` shows how the estimate settles as the number of simulations grows. It works for any hand, player count and board:
 
 ```bash
-python3 All/convergence.py --hole "AS KH" --players 6
-python3 All/convergence.py --hole "7H 2S" --players 9 --board "AH QD 2H" --save convergence.gif
+python3 convergence.py --hole "AS KH" --players 6
+python3 convergence.py --hole "7H 2S" --players 9 --board "AH QD 2H" --save convergence.gif
 ```
 
 It prints the running equity and its 95% confidence interval at checkpoints (100, 200, 500, 1,000, ...), how far the estimate moved since the last checkpoint, and how many sims you'd need for ±2, ±1, ±0.5 or ±0.1 points. The 95% confidence interval is estimate ± 1.96·σ/√n, so 4× the sims gives half the width.
@@ -124,9 +124,9 @@ It also plays an animation: the running estimate draws in with its confidence ba
 `validate.py` checks the Monte Carlo sim against the true equity, heads-up against one random hand:
 
 ```bash
-python3 All/validate.py                                       # AH KH on QH JD 2C
-python3 All/validate.py --hole "KS KD" --board ""             # preflop
-python3 All/validate.py --hole "7H 2S" --board "AH QD 2H 7D" --save validation.png
+python3 validate.py                                   # AH KH on QH JD 2C
+python3 validate.py --hole "KS KD" --board ""         # preflop
+python3 validate.py --hole "7H 2S" --board "AH QD 2H 7D" --save validation.png
 ```
 
 * **Flop, turn, river:** the true equity comes from enumerating every opponent hand and every runout (about 1.07 million matchups on the flop, about 35 seconds).
@@ -145,18 +145,17 @@ The flop, turn and river checks use the same hand evaluator for both the enumera
 ```
 PokerEquityCalculator/
 ├── README.md
-├── images/
-│   └── equity_example.png # plot used in this README
-└── All/
-    ├── main.py            # command line interface
+├── hand_analysis.py       # the calculator: run this
+├── convergence.py         # running estimate + confidence interval, with animation
+├── validate.py            # checks the sim against exact equity, with confidence intervals
+├── build_tables.py        # builds the preflop equity tables
+└── poker/                 # the engine, used by the scripts above
     ├── sim.py             # random-opponent simulation
     ├── iterated_sim.py    # realistic-opponent and folds simulations
     ├── visualizer.py      # equity plot
-    ├── convergence.py     # running estimate + confidence interval, with animation
-    ├── validate.py        # checks the sim against exact equity, with confidence intervals
-    ├── data_collector.py  # builds the preflop equity tables
     ├── evaluator.py       # hand ranking
-    ├── card.py            # card class
+    ├── card.py            # card class + parsing "AS"-style input
     ├── deck.py            # deck class
     └── Data/              # preflop tables (Standard{n}.csv)
+        └── data_finder.py # look up a hand's row in a table
 ```

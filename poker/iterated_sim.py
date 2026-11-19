@@ -1,11 +1,11 @@
 import os
 import pandas as pd
-from sim import simulate
+from .sim import simulate
 import random 
 from itertools import combinations
-from card import Card
-from deck import Deck
-from evaluator import best_hand
+from .card import Card
+from .deck import Deck
+from .evaluator import best_hand
 
 
 def load_survivors(num_players):

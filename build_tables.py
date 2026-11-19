@@ -1,7 +1,7 @@
 import os
 import pandas as pd
-from card import Card
-from sim import simulate as sim
+from poker.card import Card
+from poker.sim import simulate as sim
 
 def AggregatePreflopOdds():
     PreflopEquity = []
@@ -41,11 +41,12 @@ def AggregatePreflopOdds():
                 "loss%": result['loss'],
                 })
     df = pd.DataFrame(PreflopEquity)
-    data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'Data')
+    data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'poker', 'Data')
     os.makedirs(data_dir, exist_ok=True)
     file_path = os.path.join(data_dir, f'Standard{num_players}.csv')
     df.to_csv(file_path, index=False)
     print(f"Saved to {file_path}")
     return PreflopEquity
 
-AggregatePreflopOdds()
+if __name__ == "__main__":
+    AggregatePreflopOdds()

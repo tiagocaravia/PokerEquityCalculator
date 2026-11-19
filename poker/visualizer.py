@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
-from sim import simulate
-from iterated_sim import simulate_vs_pool, simulate_with_folds
+from .sim import simulate
+from .iterated_sim import simulate_vs_pool, simulate_with_folds
 
 
 def build_stages(community_cards): # Determines street by street stages based on the number of community cards available

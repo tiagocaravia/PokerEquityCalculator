@@ -7,7 +7,7 @@ interval after every hand, so you can see when the estimate settles down and
 how many sims you need for a given precision. It also includes an animation
 of the interval shrinking.
 
-Usage (from the All/ folder):
+Usage (from the project folder):
     python3 convergence.py --hole "AS KH" --players 6
     python3 convergence.py --hole "7H 2S" --players 9 --board "AH QD 2H" --sims 20000
     python3 convergence.py --hole "QS QD" --players 3 --save convergence.gif
@@ -18,9 +18,9 @@ import random
 
 import numpy as np
 
-from deck import Deck
-from main import parse_card
-from sim import play_one_hand
+from poker.card import parse_card
+from poker.deck import Deck
+from poker.sim import play_one_hand
 
 Z_95 = 1.96
 

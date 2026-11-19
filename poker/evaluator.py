@@ -1,5 +1,5 @@
 from itertools import combinations
-from card import Card
+from .card import Card
 
 def get_hand_rank(hand): # Evaluates The Rank of a 5 card hand
     ranks = sorted([card.rank_value for card in hand], reverse=True) # Sorts cards by rank value

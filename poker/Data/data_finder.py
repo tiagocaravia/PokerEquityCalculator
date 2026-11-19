@@ -20,4 +20,5 @@ def FindHand (hand):
         return None  # Return None if the hand is not found
     return match.iloc[0].to_dict()
 
-print(FindHand("J10 Suited"))
+if __name__ == "__main__":
+    print(FindHand("J10 Suited"))

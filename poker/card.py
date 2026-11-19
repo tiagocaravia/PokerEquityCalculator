@@ -13,3 +13,10 @@ class Card:
     def __eq__(self, other):
         return self.rank == other.rank and self.suit == other.suit
 
+
+def parse_card(card_str): # Parses user input into Card objects
+    card_str = card_str.strip().upper() # Standardizes input to uppercase and removes extra spaces
+    suit_map = {'H': 'Hearts', 'D': 'Diamonds', 'C': 'Clubs', 'S': 'Spades'} # Attributes letter to suit
+    rank = card_str[:-1] 
+    suit = suit_map.get(card_str[-1]) 
+    return Card(rank, suit)

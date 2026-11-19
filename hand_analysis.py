@@ -1,14 +1,7 @@
-from card import Card
-from sim import simulate as sim
-from visualizer import plot_equity
-from iterated_sim import load_survivors, build_pool, simulate_vs_pool, simulate_with_folds 
-
-def parse_card(card_str): # Parses user input into Card objects
-    card_str = card_str.strip().upper() # Standardizes input to uppercase and removes extra spaces
-    suit_map = {'H': 'Hearts', 'D': 'Diamonds', 'C': 'Clubs', 'S': 'Spades'} # Attributes letter to suit
-    rank = card_str[:-1] 
-    suit = suit_map.get(card_str[-1]) 
-    return Card(rank, suit)
+from poker.card import parse_card
+from poker.sim import simulate as sim
+from poker.visualizer import plot_equity
+from poker.iterated_sim import load_survivors, build_pool, simulate_vs_pool, simulate_with_folds 
 
 def get_cards(prompt, n): #input loop to get valid card input
     while True:
@@ -78,7 +71,7 @@ def main(): # Main interaction loop for the user to input their hand, community 
         fold_results = simulate_with_folds(hole_cards, community_cards, num_players, num_simulations, keep)
         display_fold_results(fold_results)
     except FileNotFoundError:
-        print(f"\nNo Standard{num_players}.csv found. Run the preflop aggregator for "f"{num_players} players to enable realistic opponents.")
+        print(f"\nNo Standard{num_players}.csv found. Run build_tables.py for "f"{num_players} players to enable realistic opponents.")
 
     plot_equity(hole_cards, community_cards, num_players, num_simulations, pool, keep)
 
