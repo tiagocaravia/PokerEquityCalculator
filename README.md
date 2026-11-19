@@ -1,3 +1,4 @@
+<img width="902" height="550" alt="Screenshot 2026-11-19 at 4 07 57 PM" src="https://github.com/user-attachments/assets/f093966e-e254-4321-87a0-00a5b7923ba9" />
 # Texas Hold'em Monte Carlo Equity Calculator
 
 A poker equity calculator I built in Python. Give it your hole cards, how many players are at the table, and (optionally) the board, and it runs a Monte Carlo sim to estimate how often you win.
@@ -71,7 +72,7 @@ Equity: 93.6%  (fair share: 31.3%)
 
 Against realistic opponents the loss rate nearly doubles. The hands that beat this one are AA, QQ, or the 7 of spades with an ace or a queen, and those are all playable hands, so they show up far more often than they would from random cards. Ties drop to 0.0% because the only hands that tie are the 7 of spades with a 2, and 7-2 isn't playable.
 
-<img width="899" height="548" alt="Screenshot 2026-11-05 at 7 00 47PM" src="https://github.com/user-attachments/assets/2703776d-ccb4-4f49-b078-4077f39d264b" />
+<img width="902" height="552" alt="Screenshot 2026-11-19 at 4 09 47 PM" src="https://github.com/user-attachments/assets/1cdfbe61-0ca6-4fba-b6a5-d96b26ba9997" />
 
 The plot shows the same hand street by street, with all three views. The gray dashed line is the fair share if all 9 players stay in (11.1%). The green dotted line is the fair share when folds shrink the field, and it's the one the green line should be judged against. Here the folds line sits below its own baseline until the turn, then climbs well above it. (The plot comes from a separate run, so its numbers differ slightly from the output above. It's Monte Carlo, so every run wobbles a little.)
 
