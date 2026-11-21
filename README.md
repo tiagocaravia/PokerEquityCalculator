@@ -1,50 +1,74 @@
-# Texas Hold'em Monte Carlo Equity Calculator
+# Hold'em Lab
 
-A poker equity calculator I built in Python. Give it your hole cards, how many players are at the table, and (optionally) the board, and it runs a Monte Carlo sim to estimate how often you win. It can also turn that equity into advice (play, call or fold), and it checks its own accuracy against exact answers.
+A Texas Hold'em lab I built in Python. It estimates how often your hand wins with Monte Carlo simulation, turns that into decisions (play, call or fold) by working out what your opponent likely holds, and trains a machine-learning bot that learns to beat different kinds of players. It also checks its own math against exact answers.
+
+```
+ cards ──► EQUITY ──► RANGES ──► DECISIONS ──► BOT
+          how often   what they   call / fold,   learns each opponent,
+          you win     likely hold pot odds, EV   trained with ML on profit
+          (Monte      (from their
+           Carlo)      actions)
+
+        + ACCURACY: is the equity right, and how many sims is enough?
+```
 
 ---
 
-## What it does
+## Start here
+
+| I want to... | Run |
+|---|---|
+| See how often my hand wins | `python3 hand_analysis.py` |
+| Know whether to play, call or fold | `python3 advise.py` |
+| Watch bots play simulated opponents | `python3 bots/arena.py` |
+| Train the ML bot | `python3 bots/train.py` |
+| Check the sim against exact answers | `python3 accuracy/validate.py` |
+| See how many sims are enough | `python3 accuracy/convergence.py` |
+
+Every script asks for its inputs if you run it with no options. After each result it asks **Try another?**, and the next round starts with your previous answers in brackets, so you can press enter to keep them and change only what you want, e.g. the same hand with a different board or player count. Ctrl-C quits. You can also pass options (shown in each section) to skip the questions. Run everything from the project folder.
+
+---
+
+## Setup
+
+Needs Python 3.10 or newer.
+
+```bash
+pip install matplotlib pandas scikit-learn
+```
+
+(numpy and Pillow, used by the convergence animation, come with these.)
+
+---
+
+## 1. Equity: how often you win
+
+`hand_analysis.py` asks for your hole cards (like `AS KH`; use `10H` for the ten of hearts), the number of players including you, the number of simulations (enter for 10,000), and the community cards, if any.
 
 * Win / tie / loss estimates for 2-9 players, from preflop through the river
 * Three different ways of modeling your opponents (see below)
-* An equity-by-street plot that compares pre-flop, flop, turn, and river equity
-* A preflop equity table for all 169 starting hands, which is how the sim decides what a "playable" hand is
-* Advice: PLAY / FOLD / CLOSE preflop, and CALL / FOLD / CLOSE facing a bet, using pot odds and the EV of calling in big blinds
-* A convergence report and animation showing the estimate settle as the number of simulations grows
-* A validator that compares the sim against exactly enumerated and published equities
+* An equity-by-street plot that compares preflop, flop, turn and river equity
 
----
-
-## Three ways to look at your hand
+### Three ways to look at your hand
 
 1. **vs random opponents.** Everyone gets two random cards and stays in. This is the classic equity calculator.
 2. **vs realistic opponents.** Everyone still stays in, but each opponent's hand is picked only from hands worth playing. Hands like 7-2 offsuit never show up.
 3. **vs table with folds.** Everyone is dealt random cards, then anyone holding an unplayable hand folds (same criteria as the realistic opponents). Folded cards stay dead (they can't land on the board) and you play whoever is left. If everyone folds, you take the pot.
 
+### How "playable" gets decided
 
----
+The preflop tables are already included in `poker/Data/` as `Standard{n}.csv`, for 3, 5, 7 and 9 players. Each one has all 169 starting hands simulated against random opponents (10,000 sims per hand). Run `python3 poker/Data/build_tables.py` to rebuild one or to add another table size. The realistic and folds modes need a table for your player count; without one, `hand_analysis.py` runs the random-opponent sim and tells you to build it. To look up a single hand, run `python3 poker/Data/data_finder.py "J10 Suited" 9`.
 
-## How "playable" gets decided
+A hand counts as playable if its equity is at least the table's fair share, which is 1 / number of players. At 9 players that's about 11.1%, and ~75 of the 169 hand types make the cut. It's a single cut, with no repeated rounds of tightening.
 
-The preflop tables are already included in `poker/Data/` as `Standard{n}.csv`, for 3, 5, 7 and 9 players. Each one has all 169 starting hands simulated against random opponents. `build_tables.py` is what built them (10,000 sims per hand). Run `python3 build_tables.py` to rebuild one or to add another table size. The realistic and folds modes need a table for your player count.
-
-A hand counts as playable if its equity is at least the table's fair share, which is 1 / number of players. At 9 players that's about 11.1%, and ~75 of the 169 hand types make the cut.
-
-It's a single cut, with no repeated rounds of tightening.
-
----
-
-## The math
+### The math
 
 * **Random and realistic modes (in `hand_analysis.py`):** Showdown equity = Win% + (Tie% / Number of Players). This is a quick approximation for split pots.
 * **Folds mode, and everything in `advise.py`:** ties are split exactly among whoever actually tied. The fair share the folds mode reports adjusts to how many players are still in (the average of 1 / players left), so it isn't a fixed 1/N.
 
-A few honest caveats: opponents' hands don't depend on how they bet, folding only happens preflop based on the starting hand, and "playable" is judged purely by equity against random hands. `advise.py` adds pot odds for a single decision, but there's no model of betting across streets yet (no implied odds, no raising). It's a way to explore equity and decisions, not a full poker bot (yet).
+A few honest caveats: in `hand_analysis.py`, opponents' hands don't depend on how they bet, and folding only happens preflop based on the starting hand. "Playable" is judged purely by equity against random hands. Betting is handled in `advise.py` and the bots below.
 
----
-
-## Example
+### Example
 
 * **Hole cards:** 7H 2S
 * **Players:** 9
@@ -74,46 +98,13 @@ Equity: 93.6%  (fair share: 31.3%)
 
 Against realistic opponents the loss rate nearly doubles. The hands that beat this one are AA, QQ, or the 7 of spades with an ace or a queen, and those are all playable hands, so they show up far more often than they would from random cards. Ties drop to 0.0% because the only hands that tie are the 7 of spades with a 2, and 7-2 isn't playable.
 
-<img width="902" height="550" alt="Screenshot 2026-11-19 at 4 07 57 PM" src="https://github.com/user-attachments/assets/f093966e-e254-4321-87a0-00a5b7923ba9" />
+<img width="902" height="550" alt="Screenshot 2026-11-19 at 4 07 57 PM" src="https://github.com/user-attachments/assets/f093966e-e254-4321-87a0-00a5b7923ba9" />
 
 The plot shows the same hand street by street, with all three views. The gray dashed line is the fair share if all 9 players stay in (11.1%). The green dotted line is the fair share when folds shrink the field, and it's the one the green line should be judged against. Here the folds line sits below its own baseline until the turn, then climbs well above it. (The plot comes from a separate run, so its numbers differ slightly from the output above. It's Monte Carlo, so every run wobbles a little.)
 
 ---
 
-## Setup
-
-Needs Python 3.10 or newer.
-
-```bash
-pip install matplotlib pandas
-```
-
-(numpy and Pillow, used by the convergence animation, come with these.)
-
----
-
-## Usage
-
-Every script asks for its inputs if you run it with no options. After each result it asks **Try another?**, and the next round starts with your previous answers in brackets, so you can press enter to keep them and change only what you want, e.g. the same hand with a different board or player count. Ctrl-C quits. You can also pass options (shown below) to skip the questions.
-
-From the project folder, run:
-
-```bash
-python3 hand_analysis.py
-```
-
-It will ask for:
-
-* Your hole cards, like `AS KH` (use `10H` for the ten of hearts)
-* Number of players, including you
-* Number of simulations (press enter for the default of 10,000)
-* Community cards, if any (or press enter to skip)
-
-If there's no `Standard{n}.csv` for your player count, it still runs the random-opponent sim and tells you to run `build_tables.py` for the rest.
-
----
-
-## Advice: play, call or fold
+## 2. Decisions: play, call or fold
 
 `advise.py` turns equity into a decision:
 
@@ -122,47 +113,122 @@ python3 advise.py                                                   # asks you q
 python3 advise.py --hole "AS 10S" --players 9                       # preflop: playable?
 python3 advise.py --hole "KH KD" --board "KS 9H 4H 7C 2H" --pot 10 --bet pot --stack 40
 python3 advise.py --hole "QH JH" --board "10H 4C 2H" --opponents 2 --pot 60 --bet 20 --bb 2
+python3 advise.py --hole "9S 9D" --board "7H 4C 2D 3S JC" --pot 10 --bet pot --action "raise big"
+python3 advise.py --hole "9S 9D" --board "7H 4C 2D 3S JC" --pot 10 --bet pot --action raise --flop "bet half" --turn check
 ```
 
 * **Preflop:** PLAY / FOLD / CLOSE, comparing your equity with the fair share (1 / players), the same cutoff the preflop tables use.
-* **Facing a bet:** CALL / FOLD / CLOSE. You need equity of at least call ÷ (pot + call) to break even, and EV(call) = equity × (pot + call) − call, with folding worth 0. The bet can be an amount or `third`, `half`, `pot`, `75%`, `2x`.
+* **Facing a bet:** CALL / FOLD / CLOSE. In CLOSE spots it also says how often to call (closer to break-even means closer to 50%), and `--roll` picks one for you at that rate.
+* **Pot odds:** You need equity of at least call ÷ (pot + call) to break even, and EV(call) = equity × (pot + call) − call, with folding worth 0. The bet can be an amount or `third`, `half`, `pot`, `75%`, `2x`.
 * **Units:** amounts are in big blinds, and EV is reported in big blinds. If you'd rather type chips, pass `--bb` with the big blind's size (`--bb 2` makes `--pot 60` mean 30bb). `2.5bb` always means big blinds.
 * **Stack (optional):** `--stack` is your stack before calling. It shows what's left behind and the stack-to-pot ratio. If calling puts you all in, it uses only the part of the bet you can match, and notes that pot odds are exact since no more betting follows.
 * **CLOSE** means the equity is within 3 points of break-even, or within its confidence interval. Those are the spots where the right answer depends on who you're playing.
 
 Equity is shown against random hands and against realistic (playable-only) hands, with a 95% interval, and the verdict uses the realistic one when there's a table for that many players. Tied pots are split exactly.
 
-**Big bets:** players who bet half the pot or more usually hold strong hands or bluffs, not the average playable hand. So for those the CLOSE band is wider and the output warns that the equity is likely too optimistic. Handling that properly, by modeling how each type of player bets, is the next step.
+**Big bets:** players who bet half the pot or more usually hold strong hands or bluffs, not the average playable hand. So for those the CLOSE band is wider and the output warns that the equity is likely too optimistic, unless ranging (below) has already accounted for the bet.
+
+### Ranging: what they could have
+
+`advise.py` narrows the opponent's possible hands based on what they did, then computes your equity against that range:
+
+* **Preflop action** (`--action`, or asked): `raise` keeps roughly their top 20% of hands, `raise big` / `3bet` the top 6%, and `call` / `limp` hands inside the top 40% (with top hands less likely, since they'd usually raise). If you don't give one, it assumes they played a hand, roughly the top 45%.
+* **Flop and turn actions** (`--flop`, `--turn`, or asked): `check`, `call`, `raise`, or `bet` with a size (`bet half`, `bet pot`, `bet 75%`, `bet 2x`). Draws (flush draws, open-ended straight draws, gutshots) are tracked separately, since players often bet them as semi-bluffs:
+
+  | They... | Strong hands | Draws | In-between | Missed |
+  |---|---|---|---|---|
+  | bet | kept (bigger bets need stronger) | often | sometimes | sometimes (c-bet bluffs) |
+  | check | rarely (they'd usually bet) | sometimes | kept | mostly kept |
+  | call | sometimes (might have raised) | kept | kept | rarely |
+  | raise | kept, stronger | sometimes | rarely | rarely |
+
+  A bet you're facing on the flop or turn counts the same way.
+* **River bet:** the bet you're facing narrows it further. Hands that beat most of the possible hands on this board bet for value (bigger bets need stronger hands), in-between hands rarely bet, and missed hands are kept as bluffs. With no read, bluffs are assumed to make up a balanced share of their bets: bet ÷ (pot + 2 × bet), which is a third for a pot-sized bet.
+* **Output:** their most likely hands, what they're holding on the board (pairs, flushes, nothing), what they're drawing to before the river, how much of their range beats you, and your equity vs the range. On the river against one opponent that's exact, so no ± is shown.
+
+For example, a big preflop raiser bets pot on a low river. Against random hands 9-9 looks like an easy call (75%), but their range is mostly AA–JJ plus AK/AQ that missed, so your equity drops to 31%, just under the 33% you need. The verdict is CLOSE, and it comes down to whether this player bluffs a balanced amount.
+
+The assumed tendencies live in `Tendencies` in `poker/ranges.py`: how wide they raise, how often they c-bet, semi-bluff, trap and float.
+
+**Why river bluff-catchers come out CLOSE with no read:** a balanced bluffing amount is, by definition, the amount that makes a bluff-catching hand break even. So with no read, hands that only beat bluffs land near the pot odds, and the earlier streets mostly change which value hands they have, not how many bluffs. That's the honest no-read answer. What decides those spots is how this particular player bluffs, which is what the bots learn.
 
 ---
 
-## Convergence
+## 3. Bots: learning to beat opponents
 
-`convergence.py` shows how the estimate settles as the number of simulations grows. It works for any hand, player count and board:
+`bots/` plays simulated opponents, learns how each one plays, and trains a machine-learning bot on the results.
+
+### The arena
 
 ```bash
-python3 convergence.py                                              # asks you questions
-python3 convergence.py --hole "AS KH" --players 6
-python3 convergence.py --hole "7H 2S" --players 9 --board "AH QD 2H" --save convergence.gif
+python3 bots/arena.py                      # asks you questions
+python3 bots/arena.py --hands 100000 --session 1000 --save arena.png
 ```
 
-It prints the running equity and its 95% confidence interval at checkpoints (100, 200, 500, 1,000, ...), how far the estimate moved since the last checkpoint, and how many sims you'd need for ±2, ±1, ±0.5 or ±0.1 points. The 95% confidence interval is estimate ± 1.96·σ/√n, so 4× the sims gives half the width.
+**The game:** a heads-up river with 10bb in the pot. Players take turns acting first, so each one alternates between betting or checking and calling or folding. Each opponent plays one session (1,000 hands by default) and is a randomly nudged version of one of four profiles in `bots/profiles.py`: nit, regular, calling station and maniac. The bot meets every new opponent knowing nothing about them.
 
-It also plays an animation: the running estimate draws in with its confidence band shrinking around it, next to a bell curve of where the true equity probably is, which narrows into a spike. Use `--save file.gif` to save it, or `--no-animate` to skip it.
+**Real cards, fast:** the first run scores every possible hand on 1,000 real river boards (about 45 seconds, cached in `bots/cache/`). Both players are dealt hands people actually play, and the bot ranges its opponent with real cards, blockers included, using the same value-and-bluff logic as `advise.py`. 100,000 hands take about 10 seconds per bot.
 
-<img width="1299" height="559" alt="Screenshot 2026-11-19 at 4 46 56 PM" src="https://github.com/user-attachments/assets/ef600f3d-c15f-4d8f-86d3-4f4567a49cd7" />
+**Bot versions** (the hand-built bot in `bots/ml_agent.py`), all playing exactly the same deals and opponents:
+
+* **no read:** the same no-read assumptions as `advise.py`, and never learns
+* **no read + mixing:** randomizes in CLOSE spots
+* **learner:** learns what this opponent's bets look like at showdown and how often they call its bets, starting from the no-read assumptions held as if it had seen about 8 hands, and mixes
+* **learner, no mixing**
+* **oracle:** knows the opponent's exact profile, but still plays the hand-built rules
+
+**Results** (100,000 hands, new opponent every 1,000):
+
+| bb/100 | no read | no read + mixing | learner | learner, no mixing | oracle |
+|---|---|---|---|---|---|
+| all | +40.9 | +28.7 | +53.8 | +55.1 | +62.7 |
+| vs nits | −9.9 | −9.6 | +29.1 | +29.4 | +41.1 |
+
+* Even "no read" profits, because the opponents are simple fixed rules and fixed rules are exploitable. So the meaningful number is each bot's **edge over "no read" on the same hands**, which the arena reports with a 95% interval.
+* The learner without mixing is +14.2 ± 1.7 bb/100 ahead of "no read" and clearly ahead from about **hand 25** against a new opponent. The biggest gain is against nits: it learns they rarely bluff and stops paying them off.
+* **Mixing costs money here** (about 12 bb/100), because these opponents never adapt. Mixing is protection against opponents who learn your patterns, like other bots in a competition. Against fixed opponents it's just a cost.
+
+The plot shows cumulative profit for each bot, and each bot's edge over "no read" by how many hands into a new opponent it is.
+
+### Training the ML bot
+
+```bash
+python3 bots/train.py                      # asks you questions
+python3 bots/train.py --rounds 5 --hands 20000 --save training.png
+```
+
+The ML bot (`MLAgent` in `bots/ml_agent.py`) uses two gradient-boosted models (scikit-learn's `HistGradientBoostingRegressor`). One predicts the profit of calling a bet. The other predicts the profit of checking and of betting ½, ¾ or 1¼ pot. Its features are the hand-built bot's guidance: hand strength, equity vs the ranged opponent, pot odds, the hand-built EV of each action, and its reads on this opponent (bluff share, call rate, how many hands of evidence).
+
+Training works in rounds:
+
+1. **Play** hands against random opponents. Every decision is logged with the profit the hand made, which is the reward. Early rounds explore a lot (30% random actions), later ones less (5%).
+2. **Retrain** both models on everything collected so far.
+3. **Test** a frozen copy on held-out hands against held-out opponents, including a "tricky" type (over-bets with very strong hands or bluffs) it never trains against.
+
+Results (100,000 training hands, about 2 minutes):
+
+| Test opponents | ML bot | no read | learner | oracle |
+|---|---|---|---|---|
+| all | +81.7 | +55.0 | +65.2 | +73.5 |
+| nit | +29.4 | −11.4 | +18.1 | +30.1 |
+| calling station | +76.5 | +34.5 | +49.7 | +48.8 |
+| tricky (never trained on) | +39.6 | +26.4 | +26.2 | +45.4 |
+
+Its edge over the hand-built learner grows from +3.9 ± 5.0 bb/100 after 20,000 hands to +16.5 ± 4.4 after 100,000. It even beats the "oracle" overall. The oracle knows the opponent's profile but still plays the hand-built rules, with one bet size. The ML bot learns things those rules miss, like betting bigger for value against calling stations. The trained models are saved to `bots/cache/ml_model.joblib`.
 
 ---
 
-## Validation
+## 4. Accuracy: is the math right?
 
-`validate.py` checks the Monte Carlo sim against the true equity, heads-up against one random hand:
+### Validation
+
+`accuracy/validate.py` checks the Monte Carlo sim against the true equity, heads-up against one random hand:
 
 ```bash
-python3 validate.py                                   # asks you questions
-python3 validate.py --hole "AH KH" --board "QH JD 2C"
-python3 validate.py --hole "KS KD" --board ""         # preflop
-python3 validate.py --hole "7H 2S" --board "AH QD 2H 7D" --save validation.png
+python3 accuracy/validate.py                                   # asks you questions
+python3 accuracy/validate.py --hole "AH KH" --board "QH JD 2C"
+python3 accuracy/validate.py --hole "KS KD" --board ""         # preflop
+python3 accuracy/validate.py --hole "7H 2S" --board "AH QD 2H 7D" --save validation.png
 ```
 
 * **Flop, turn, river:** the true equity comes from enumerating every opponent hand and every runout (about 1.07 million matchups on the flop, about 35 seconds).
@@ -174,28 +240,51 @@ It then runs the sim several times and tracks a 95% confidence interval (estimat
 
 The flop, turn and river checks use the same hand evaluator for both the enumeration and the sim, so they test the sampling and the interval math. The preflop check compares against outside numbers, so it also tests the evaluator.
 
+### Convergence
+
+`accuracy/convergence.py` shows how the estimate settles as the number of simulations grows. It works for any hand, player count and board:
+
+```bash
+python3 accuracy/convergence.py                                     # asks you questions
+python3 accuracy/convergence.py --hole "AS KH" --players 6
+python3 accuracy/convergence.py --hole "7H 2S" --players 9 --board "AH QD 2H" --save convergence.gif
+```
+
+It prints the running equity and its 95% confidence interval at checkpoints (100, 200, 500, 1,000, ...), how far the estimate moved since the last checkpoint, and how many sims you'd need for ±2, ±1, ±0.5 or ±0.1 points. The 95% confidence interval is estimate ± 1.96·σ/√n, so 4× the sims gives half the width.
+
+It also plays an animation: the running estimate draws in with its confidence band shrinking around it, next to a bell curve of where the true equity probably is, which narrows into a spike. Use `--save file.gif` to save it, or `--no-animate` to skip it.
+
+<img width="1299" height="559" alt="Screenshot 2026-11-19 at 4 46 56 PM" src="https://github.com/user-attachments/assets/ef600f3d-c15f-4d8f-86d3-4f4567a49cd7" />
+
 ---
 
 ## Project layout
 
 ```
-PokerEquityCalculator/
+holdem-lab/
 ├── README.md
-├── hand_analysis.py       # the calculator: run this
-├── advise.py              # PLAY / FOLD / CLOSE, pot odds and EV of calling
-├── convergence.py         # running estimate + confidence interval, with animation
-├── validate.py            # checks the sim against exact equity, with confidence intervals
-├── build_tables.py        # builds the preflop equity tables
-└── poker/                 # the engine, used by the scripts above
-    ├── sim.py             # random-opponent simulation
-    ├── iterated_sim.py    # realistic-opponent and folds simulations
-    ├── visualizer.py      # equity plot
-    ├── equity.py          # equity + confidence interval vs a pluggable opponent model
-    ├── decisions.py       # pot odds, EV and verdicts (tunable Settings)
-    ├── evaluator.py       # hand ranking
-    ├── card.py            # card class + parsing "AS"-style input
-    ├── prompts.py         # the questions the scripts ask, with defaults
-    ├── deck.py            # deck class
-    └── Data/              # preflop tables (Standard{n}.csv)
-        └── data_finder.py # look up a hand: python3 poker/Data/data_finder.py "J10 Suited" 9
+├── hand_analysis.py           # 1. equity: how often your hand wins
+├── advise.py                  # 2. decisions: play / call / fold, pot odds, ranging
+├── bots/                      # 3. bots
+│   ├── profiles.py            # opponent types (nit, regular, calling station, maniac, tricky)
+│   ├── pool.py                # scores every hand on 1,000 real river boards, cached
+│   ├── ml_agent.py            # the bot: hand-built versions + the ML bot
+│   ├── arena.py               # plays bot versions against random opponents
+│   └── train.py               # trains the ML bot, tests on held-out opponents
+├── accuracy/                  # 4. accuracy
+│   ├── validate.py            # sim vs exact / published equity
+│   └── convergence.py         # how many sims is enough, with animation
+└── poker/                     # the engine everything above uses
+    ├── card.py, deck.py       # cards and deck
+    ├── evaluator.py           # hand ranking
+    ├── sim.py                 # random-opponent simulation
+    ├── iterated_sim.py        # realistic-opponent and folds simulations
+    ├── equity.py              # equity + confidence interval vs a pluggable opponent model
+    ├── ranges.py              # narrowing an opponent's range from their actions
+    ├── decisions.py           # pot odds, EV and verdicts (tunable Settings)
+    ├── visualizer.py          # equity-by-street plot
+    ├── prompts.py             # the questions the scripts ask, with defaults
+    └── Data/                  # preflop tables (Standard{n}.csv)
+        ├── build_tables.py    # builds the tables
+        └── data_finder.py     # looks up one hand in a table
 ```

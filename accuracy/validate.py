@@ -1,9 +1,12 @@
 import argparse
 import math
+import os
 import random
 import sys
 import time
 from itertools import combinations
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # so "poker" imports work
 
 import numpy as np
 
@@ -11,7 +14,7 @@ from poker.prompts import again, ask, ask_cards, cards_from, interactive_loop, y
 from poker.deck import Deck
 from poker.evaluator import best_hand
 from poker.sim import simulate
-from convergence import Z_95, checkpoints, running_ci, simulate_values
+from accuracy.convergence import Z_95, checkpoints, running_ci, simulate_values
 
 
 # Published exact equities (sources in README)

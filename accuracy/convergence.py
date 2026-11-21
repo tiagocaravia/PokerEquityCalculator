@@ -1,7 +1,10 @@
 import argparse
 import math
+import os
 import random
 import sys
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # so "poker" imports work
 
 import numpy as np
 

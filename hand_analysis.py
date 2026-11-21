@@ -69,7 +69,7 @@ def analyze(): # One hand: inputs, results, plot
         fold_results = simulate_with_folds(hole_cards, community_cards, num_players, num_simulations, keep)
         display_fold_results(fold_results)
     except FileNotFoundError:
-        print(f"\nNo Standard{num_players}.csv found. Run build_tables.py for "f"{num_players} players to enable realistic opponents.")
+        print(f"\nNo Standard{num_players}.csv found. Run poker/Data/build_tables.py for "f"{num_players} players to enable realistic opponents.")
 
     plot_equity(hole_cards, community_cards, num_players, num_simulations, pool, keep)
 

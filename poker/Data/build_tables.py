@@ -1,4 +1,8 @@
 import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))  # so "poker" imports work
+
 import pandas as pd
 from poker.card import Card
 from poker.sim import simulate as sim
@@ -41,7 +45,7 @@ def AggregatePreflopOdds():
                 "loss%": result['loss'],
                 })
     df = pd.DataFrame(PreflopEquity)
-    data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'poker', 'Data')
+    data_dir = os.path.dirname(os.path.abspath(__file__))
     os.makedirs(data_dir, exist_ok=True)
     file_path = os.path.join(data_dir, f'Standard{num_players}.csv')
     df.to_csv(file_path, index=False)
