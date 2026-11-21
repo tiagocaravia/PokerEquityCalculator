@@ -102,9 +102,11 @@ Equity: 92.3% ± 1.0  (an average hand here: 20.8%)
 
 At a real table the loss rate drops: more than half of the eight opponents fold, so only about three or four are left to beat you. The hands that beat this one are AA, QQ, or the 7 of spades with an ace or a queen. Ties drop to 0.0% because the only hands that tie are the 7 of spades with a 2, and 7-2 isn't a hand people play.
 
-<img width="902" height="550" alt="Screenshot 2026-11-19 at 4 07 57 PM" src="https://github.com/user-attachments/assets/f093966e-e254-4321-87a0-00a5b7923ba9" />
 
 The plot shows the same hand street by street, in both views. Each solid line has a matching baseline in the same color: the dashed line is an average hand with nobody folding (11.1%), and the dotted line is an average hand at a real table (about 18–22% here). Here 7-2 sits below the real-table average until the turn, then climbs well above it. The plot and the text come from the same run, so their numbers match.
+
+<img width="899" height="552" alt="Screenshot 2026-11-21 at 2 30 57 AM" src="https://github.com/user-attachments/assets/56642ed5-2fb2-4f2a-a493-203611d33f1b" />
+
 
 ---
 
