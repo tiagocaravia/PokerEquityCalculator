@@ -7,7 +7,7 @@ from itertools import combinations
 from .deck import Deck
 from .equity import RandomOpponents, key, pot_share
 from .evaluator import best_hand
-from .iterated_sim import hand_label, load_table
+from .tables import hand_label, load_table
 
 TABLE_SIZES = (3, 5, 7, 9)  # Preflop tables we have
 EDGE = 0.03                 # How soft range edges are
@@ -288,6 +288,7 @@ class RangeModel: # Opponent model: the first opponent comes from the range, any
             self._deck_id = id(deck)
         first = random.choices(self._hands, weights=self._weights)[0]
         if num_opponents == 1:
-            return [first]
+            return [first], first
         rest = [c for c in deck if key(c) not in {key(first[0]), key(first[1])}]
-        return [first] + self.others.deal(rest, num_opponents - 1)
+        hands, dealt = self.others.deal(rest, num_opponents - 1)
+        return [first] + hands, list(first) + dealt

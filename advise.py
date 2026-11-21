@@ -7,7 +7,7 @@ from poker.prompts import NONE_WORDS, again, ask, ask_cards, cards_from, interac
 from poker.decisions import advise_call, advise_preflop
 from poker.equity import EquityEstimate, RandomOpponents, RangeOpponents, estimate_equity
 from poker.ranges import PREFLOP_ACTIONS, Range, RangeModel, parse_street_action
-from poker.iterated_sim import build_pool, hand_label, load_survivors, load_table
+from poker.tables import build_pool, hand_label, load_survivors, load_table
 
 TABLE_SIMS = 10000  # Sims per hand in the tables
 BET_WORDS = {"third": 1 / 3, "half": 0.5, "pot": 1.0}
@@ -39,10 +39,10 @@ def pct(x):
     return f"{x * 100:.1f}%"
 
 
-def opponent_models(num_players): # Random + realistic ranges
+def opponent_models(num_players): # Random hands + hands people play
     models = [RandomOpponents()]
     try:
-        models.append(RangeOpponents(build_pool(load_survivors(num_players)), "realistic"))
+        models.append(RangeOpponents(build_pool(load_survivors(num_players)), "played"))
     except FileNotFoundError:
         pass
     return models
@@ -158,7 +158,7 @@ def show_facing_bet(hole, board, opponents, num_players, pot_before_bet, bet, st
         spread = f"± {adv.ev_half_width:<5.2f}" if est.sims else "(exact)"
         print(f"  {est.model:<11} {str(est) if est.sims else pct(est.equity):>13}   {adv.ev:+8.2f} {spread:<8}bb  {adv.action}")
 
-    final = rows[-1][1]  # Ranged, else realistic, else random
+    final = rows[-1][1]  # Ranged, else played, else random
     print(f"\n→ {final.action}  (based on {rows[-1][0].model} opponents)")
     if final.action == "CLOSE":
         print(f"  Close to break-even: call about {final.call_probability:.0%} of the time, so you're hard to exploit.")

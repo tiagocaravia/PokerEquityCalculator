@@ -12,9 +12,9 @@ import numpy as np
 
 from poker.prompts import again, ask, ask_cards, cards_from, interactive_loop, yes
 from poker.deck import Deck
+from poker.equity import run_hands
 from poker.evaluator import best_hand
-from poker.sim import simulate
-from accuracy.convergence import Z_95, checkpoints, running_ci, simulate_values
+from accuracy.convergence import Z_95, checkpoints, running_ci
 
 
 # Published exact equities (sources in README)
@@ -59,7 +59,7 @@ def exact_equity(hole_cards, board): # Enumerate every runout
 
 
 def monte_carlo_run(hole_cards, board, num_simulations): # One heads-up run
-    return running_ci(simulate_values(hole_cards, board, 2, num_simulations))
+    return running_ci(run_hands(hole_cards, board, 1, num_simulations)[0])
 
 
 def pct(x):
@@ -167,16 +167,6 @@ def run(hole_str, board_text, sims, runs_n, show_plot=True, save=None):
         final_vars = [(h[-1] / Z_95) ** 2 * sims for _, h in runs]
         exact["sigma"] = math.sqrt(sum(final_vars) / len(final_vars))
         print(f"  Per-hand std dev σ ≈ {exact['sigma']:.3f} (estimated from all {runs_n * sims:,} hands)")
-
-    # 3. The simulator as hand_analysis.py calls it
-    print(f"\nRunning simulate() as hand_analysis.py does ({sims:,} sims)...", flush=True)
-    r = simulate(hole, board, 2, sims)
-    sim_equity = r["win"] + r["tie"] / 2
-    se = exact["sigma"] * 100 / math.sqrt(sims)
-    z = (sim_equity - exact["equity"] * 100) / se
-    verdict = "OK" if abs(z) < Z_95 else "outside 95% range (expected about 1 time in 20)"
-    print(f"  simulate() equity: {sim_equity:.2f}%   off by {sim_equity - exact['equity'] * 100:+.2f} pts"
-          f"   z = {z:+.2f}   {verdict}")
 
     mean, hw = runs[0]
     print("\n  First run, step by step:")

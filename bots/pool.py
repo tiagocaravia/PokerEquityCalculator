@@ -6,7 +6,7 @@ import numpy as np
 
 from poker.deck import Deck
 from poker.evaluator import best_hand
-from poker.iterated_sim import hand_label
+from poker.tables import hand_label
 from poker.ranges import preflop_percentiles, soft_keep
 
 CACHE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache", "river_boards.npz")

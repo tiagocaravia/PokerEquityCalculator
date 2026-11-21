@@ -8,19 +8,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) 
 
 import numpy as np
 
+from poker.equity import Z_95, run_hands
 from poker.prompts import again, ask, ask_cards, cards_from, interactive_loop, yes
-from poker.deck import Deck
-from poker.sim import play_one_hand
-
-Z_95 = 1.96
-
-
-def simulate_values(hole_cards, community_cards, num_players, num_simulations): # Pot share per hand
-    value = {"win": 1.0, "tie": 1 / num_players, "loss": 0.0}
-    known = hole_cards + community_cards
-    base_deck = [c for c in Deck().cards if c not in known]
-    return np.array([value[play_one_hand(hole_cards, community_cards, num_players, base_deck)]
-                     for _ in range(num_simulations)])
 
 
 def running_ci(values): # Running estimate + 95% CI
@@ -150,7 +139,7 @@ def run(hole_str, board_str, players, sims, animate_it=True, save=None):
     title = f"{hole_str.upper()} {where}  ·  {players} players  ·  {sims:,} sims"
     print(f"\n=== Convergence: {title} ===\n")
 
-    values = simulate_values(hole, board, players, sims)
+    values, _, _ = run_hands(hole, board, players - 1, sims)
     mean, half_width = running_ci(values)
     convergence_report(mean, half_width)
 

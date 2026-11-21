@@ -1,6 +1,4 @@
 import matplotlib.pyplot as plt
-from .sim import simulate
-from .iterated_sim import simulate_vs_pool, simulate_with_folds
 
 
 def build_stages(community_cards): # Determines street by street stages based on the number of community cards available
@@ -18,38 +16,18 @@ def build_stages(community_cards): # Determines street by street stages based on
     return stages
 
 
-def stage_equity(result, num_players): # Equity formula for the random and pool sims
-    return result["win"] + (result["tie"] / num_players)
-
-
-def plot_equity(hole_cards, community_cards, num_players=2, simulations=10000, pool=None, keep=None):
-
-    community_stages = build_stages(community_cards)
-    street_names = ["Preflop", "Flop", "Turn", "River"]
-
-    streets = street_names[:len(community_stages)]
-    xs = list(range(len(streets)))
+def plot_equity(streets, num_players): # Equity by street; streets come from hand_analysis.equity_by_street
+    names = ["Preflop", "Flop", "Turn", "River"][:len(streets)]
+    xs = list(range(len(names)))
     left, right = -0.3, len(xs) - 0.7  # plot edges
 
-    fair_share = (1 / num_players) * 100
+    fair_share = (1 / num_players) * 100  # what an average hand wins when nobody folds
+    has_table = "table" in streets[0]
 
-    series = {"vs random opponents": []}  # line name -> equity at each street
-    if pool is not None:
-        series["vs realistic opponents"] = []
-    if keep is not None:
-        series["vs table with folds"] = []
-    fold_fair_share = []
-
-    for community in community_stages:
-        series["vs random opponents"].append(
-            stage_equity(simulate(hole_cards, community, num_players, simulations), num_players))
-        if pool is not None:
-            series["vs realistic opponents"].append(
-                stage_equity(simulate_vs_pool(hole_cards, community, num_players, simulations, pool), num_players))
-        if keep is not None:
-            r = simulate_with_folds(hole_cards, community, num_players, simulations, keep)
-            series["vs table with folds"].append(r["equity"])
-            fold_fair_share.append(r["fair_share"])
+    series = {"vs random hands (nobody folds)": [s["random"].equity * 100 for s in streets]}
+    if has_table:
+        series["at a real table (weak hands fold)"] = [s["table"].equity * 100 for s in streets]
+        fold_average = [s["table average"] * 100 for s in streets]  # what an average hand wins at that table
 
     plt.figure(figsize=(9, 5.5))
 
@@ -58,16 +36,16 @@ def plot_equity(hole_cards, community_cards, num_players=2, simulations=10000, p
         line, = plt.plot(xs, values, marker="o", linewidth=2, label=name)
         colors[name] = line.get_color()
 
-    plt.axhline(y=fair_share, linestyle="--", alpha=0.7, color="gray",
-                label=f"Fair share if all {num_players} stay in ({fair_share:.1f}%)")
+    plt.axhline(y=fair_share, linestyle="--", alpha=0.7, color=colors["vs random hands (nobody folds)"],
+                label=f"Average hand, nobody folds ({fair_share:.1f}%)")
 
-    if keep is not None:
-        # Stretch the dotted line to both edges, like the gray one, by repeating the first and last values
+    if has_table:
+        # Stretch the dotted line to both edges, like the dashed one, by repeating the first and last values
         fx = [left] + xs + [right]
-        fy = [fold_fair_share[0]] + fold_fair_share + [fold_fair_share[-1]]
+        fy = [fold_average[0]] + fold_average + [fold_average[-1]]
         plt.plot(fx, fy, linestyle=":", linewidth=2, marker="s", markersize=5,
                  markevery=list(range(1, len(fx) - 1)),  # markers only on the real street points
-                 color=colors["vs table with folds"], label="Fair share with folds")
+                 color=colors["at a real table (weak hands fold)"], label="Average hand at a real table")
 
     for i in xs: # Label points: highest above, lowest below, anything in the middle to the right
         ranked = sorted(series, key=lambda name: series[name][i], reverse=True)
@@ -83,7 +61,7 @@ def plot_equity(hole_cards, community_cards, num_players=2, simulations=10000, p
                          ha=ha, va=va, color=colors[name],
                          bbox=dict(boxstyle="round,pad=0.15", fc="white", ec="none", alpha=0.8))
 
-    plt.xticks(xs, streets)
+    plt.xticks(xs, names)
     plt.xlim(left, right)
     plt.ylim(-10, 100) # Extra room below zero so labels under low points aren't cut off
     plt.yticks(range(0, 101, 20))

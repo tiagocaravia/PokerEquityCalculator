@@ -1,8 +1,8 @@
 from poker.card import parse_card
+from poker.equity import FoldingOpponents, estimate_equity
 from poker.prompts import again, interactive_loop
-from poker.sim import simulate as sim
-from poker.visualizer import plot_equity
-from poker.iterated_sim import load_survivors, build_pool, simulate_vs_pool, simulate_with_folds 
+from poker.tables import load_survivors
+from poker.visualizer import build_stages, plot_equity
 
 def get_cards(prompt, n): #input loop to get valid card input
     while True:
@@ -15,26 +15,28 @@ def get_cards(prompt, n): #input loop to get valid card input
         except (KeyError, ValueError):
             print("Invalid card format. Use RANK followed by SUIT (e.g., 'AH' for Ace of Hearts).")
 
-def display_results(results): # Displays the results to the user
-    print("\n--- RESULTS ---")
-    print(f"Win:  {results['win']}%")
-    print(f"Tie:  {results['tie']}%")
-    print(f"Loss: {results['loss']}%")
+def show(title, est, average): # One view's results
+    print(f"\n--- {title} ---")
+    folded = f"  ({est.uncontested * 100:.1f}% because everyone folded)" if est.uncontested else ""
+    print(f"Win:  {est.win * 100:.1f}%{folded}")
+    print(f"Tie:  {est.tie * 100:.1f}%")
+    print(f"Loss: {est.loss * 100:.1f}%")
+    if est.model == "real table":
+        print(f"Average opponents left in: {est.opponents_left:.2f}")
+    print(f"Equity: {est}  (an average hand here: {average * 100:.1f}%)")
 
 
-def display_pool_results(results):
-    print("\n--- VS REALISTIC OPPONENTS (weak hands folded) ---")
-    print(f"Win:  {results['win']}%")
-    print(f"Tie:  {results['tie']}%")
-    print(f"Loss: {results['loss']}%")
+def equity_by_street(hole, board, num_players, sims, keep): # Both views at every street so far
+    streets = []
+    for community in build_stages(board):
+        street = {"random": estimate_equity(hole, community, num_players - 1, sims), "average": 1 / num_players}
+        if keep:
+            table = FoldingOpponents(keep)
+            street["table"] = estimate_equity(hole, community, num_players - 1, sims, table)
+            street["table average"] = estimate_equity(None, community, num_players - 1, sims, table).equity
+        streets.append(street)
+    return streets
 
-def display_fold_results(results):
-    print("\n--- VS TABLE WITH FOLDS (weak hands fold, their cards stay dead) ---")
-    print(f"Win:  {results['win']}%  ({results['uncontested']}% because everyone folded)")
-    print(f"Tie:  {results['tie']}%")
-    print(f"Loss: {results['loss']}%")
-    print(f"Average opponents left in: {results['avg_opponents']}")
-    print(f"Equity: {results['equity']}%  (fair share: {results['fair_share']}%)")
 
 def analyze(): # One hand: inputs, results, plot
     hole_cards = get_cards("Enter your 2 hole cards (e.g. AS KH): ", 2)
@@ -52,26 +54,22 @@ def analyze(): # One hand: inputs, results, plot
         community_cards = [parse_card(c) for c in community_input.split()]
     else:
         community_cards = []
-  
-    print("\nCalculating equity...")
-    results = sim(hole_cards, community_cards, num_players, num_simulations)
-    display_results(results)
 
-    pool = None
-    keep = None
     try:
-        survivors = load_survivors(num_players)
-        keep = set(survivors["Hand"])
-        pool = build_pool(survivors)
-        pool_results = simulate_vs_pool(hole_cards, community_cards, num_players, num_simulations, pool)
-        display_pool_results(pool_results)
-
-        fold_results = simulate_with_folds(hole_cards, community_cards, num_players, num_simulations, keep)
-        display_fold_results(fold_results)
+        keep = set(load_survivors(num_players)["Hand"])
     except FileNotFoundError:
-        print(f"\nNo Standard{num_players}.csv found. Run poker/Data/build_tables.py for "f"{num_players} players to enable realistic opponents.")
+        keep = None
+        print(f"\nNo Standard{num_players}.csv found. Run poker/Data/preflop_tables.py for "
+              f"{num_players} players to see results at a real table.")
 
-    plot_equity(hole_cards, community_cards, num_players, num_simulations, pool, keep)
+    print("\nCalculating equity...")
+    streets = equity_by_street(hole_cards, community_cards, num_players, num_simulations, keep)
+    now = streets[-1]
+    show("VS RANDOM HANDS (nobody folds)", now["random"], now["average"])
+    if keep:
+        show("AT A REAL TABLE (weak hands fold, their cards stay dead)", now["table"], now["table average"])
+
+    plot_equity(streets, num_players)
 
 
 def main(): # Main interaction loop for the user to input their hand, community cards, and get results
