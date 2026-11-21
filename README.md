@@ -220,6 +220,31 @@ Results (100,000 training hands, about 2 minutes):
 
 Its edge over the hand-built learner grows from +3.4 ± 5.0 bb/100 after 20,000 hands to +18.9 ± 4.3 after 100,000. It even beats the "oracle" overall. The oracle knows the opponent's profile but still plays the hand-built rules, with one bet size. The ML bot learns things those rules miss, like betting bigger for value against calling stations. The trained models are saved to `bots/cache/ml_model.joblib`.
 
+To watch it learn, add `--animate training.gif` (10 rounds of 10,000 hands works well: `--rounds 10 --hands 10000`). Each frame is one round and shows:
+
+* its win rate and its edge over the hand-built learner so far;
+* what it does when it acts first, at each hand strength (check, or bet ½, ¾ or 1¼ pot);
+* how often it calls a bet, at each hand strength, next to the hand-built guidance it started from;
+* which inputs each model relies on.
+
+Every round replays the same fixed set of spots, so the changes come from what it learned, not from new cards.
+
+### What the ML bot relies on
+
+```bash
+python3 bots/explain.py --save explain.png
+```
+
+The script plays 20,000 hands with the trained bot, then draws two views:
+
+* **Which inputs matter:** it scrambles one input at a time and measures how much the model's own predictions change. The more they change, the more the model relies on that input.
+* **Its logic as a tree:** a 3-level decision tree is fitted to imitate each model, so its main splits can be read as if/else rules. The title shows how closely the small tree matches the full model (R²).
+
+What it shows:
+
+* **The calling model** leans most on your equity against their whole range, then on the hand-built EV of calling and the bet size. The reads (call rate, bluff share) matter, but mostly through the ranged equity, which already uses them. "Pot odds needed" is ignored, since bet size already carries that information.
+* **The betting model** relies almost entirely on the hand-built EV of each option (a 3-level tree matches it with R² = 0.97). So it learned to trust the guidance, and its edge comes from correcting it: which size to pick, and when the hand-built numbers are too optimistic or too pessimistic.
+
 ---
 
 ## 4. Accuracy: is the math right?
@@ -274,7 +299,8 @@ holdem-lab/
 │   ├── pool.py                # scores every hand on 1,000 real river boards, cached
 │   ├── ml_agent.py            # the bot: hand-built versions + the ML bot
 │   ├── arena.py               # plays bot versions against random opponents
-│   └── train.py               # trains the ML bot, tests on held-out opponents
+│   ├── train.py               # trains the ML bot, tests on held-out opponents
+│   └── explain.py             # which inputs the ML bot relies on, its logic as a tree, training animation
 ├── accuracy/                  # 4. accuracy
 │   ├── validate.py            # sim vs exact / published equity
 │   └── convergence.py         # how many sims is enough, with animation

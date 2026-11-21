@@ -36,6 +36,9 @@ HELD_OUT = {  # only used for testing, never for training
 }
 
 
+TEST_PRESETS = {**PRESETS, **HELD_OUT}  # what the bots are tested against
+
+
 def random_profile(rng, presets=PRESETS): # A preset with every number nudged, so no two opponents are identical
     base = rng.choice(list(presets.values()))
     jitter = lambda x, spread, lo, hi: min(hi, max(lo, x + rng.uniform(-spread, spread)))

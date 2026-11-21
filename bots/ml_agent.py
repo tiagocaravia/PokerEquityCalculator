@@ -16,6 +16,13 @@ from .profiles import AIR
 
 MEDIUM = 0.15  # no-read guess: how often in-between hands bet the river
 BET_SIZES = (0.5, 0.75, 1.25)  # pot fractions the ML bot can bet
+MODEL_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache", "ml_model.joblib")
+CALL_FEATURES = ["hand strength", "equity vs their range", "equity vs their bet (ranged)", "bet size (pot)",
+                 "pot odds needed", "guided EV of calling", "bluff share (read)", "their bets seen",
+                 "their call rate (read)", "hands of evidence"]
+BET_FEATURES = ["hand strength", "equity vs their range", "bet size (pot)", "guided EV of this action",
+                "guided EV of checking", "their call rate (read)", "our bets they answered",
+                "bluff share (read)", "hands of evidence"]
 
 # CONFLICT[i] marks every hand that shares a card with hand i
 _onehot = np.zeros((len(COMBOS), 52), dtype=np.float32)
@@ -164,6 +171,7 @@ class MLAgent(Agent): # Hand-built reads + ranging as features; two GBMs predict
         self.call_data, self.bet_data = [], []  # (features, profit) from finished hands
         self.pending = None
         self.rng = np.random.default_rng(7)
+        self.spot_log = None  # set to {"call": [], "bet": []} to record every spot it decides
 
     # --- features (the guidance) ---
     def call_features(self, spot, bet):
@@ -184,6 +192,8 @@ class MLAgent(Agent): # Hand-built reads + ranging as features; two GBMs predict
     # --- decisions ---
     def respond(self, spot, bet, rng):
         x = self.call_features(spot, bet)
+        if self.spot_log is not None:
+            self.spot_log["call"].append(x)
         if self.call_model is None:
             call = super().respond(spot, bet, rng)  # no model yet: follow the guidance
         else:
@@ -199,6 +209,8 @@ class MLAgent(Agent): # Hand-built reads + ranging as features; two GBMs predict
         for size in options:
             evs = self.bet_evs(spot, max(size, 0.01) * spot.pot)
             rows.append(self.bet_features(spot, size, evs))
+        if self.spot_log is not None:
+            self.spot_log["bet"].append(rows)
         if self.rng.random() < self.explore:
             choice = int(self.rng.integers(len(options)))
         elif self.bet_model is None:  # no model yet: hand-built choice among the sizes
